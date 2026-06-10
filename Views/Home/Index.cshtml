@@ -1,8 +1,15 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Trang chủ";
+    ViewData["MetaDescription"] = "TechStore - Mua điện thoại, laptop, phụ kiện chính hãng. Giá tốt nhất, giao nhanh miễn phí, bảo hành 12 tháng.";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<partial name="_HomeHero" />
+<partial name="_PromotionBanners" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/home.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/home.js" asp-append-version="true"></script>
+}

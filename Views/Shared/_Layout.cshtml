@@ -1,50 +1,59 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - e_commerce_web_customer</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <meta name="description" content="@(ViewData["MetaDescription"] ?? "TechStore - Mua sắm điện thoại, laptop, phụ kiện chính hãng với giá tốt nhất. Giao nhanh - Miễn phí - Bảo hành 12 tháng.")" />
+
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " | TechStore" : "TechStore - Điện thoại, Laptop, Phụ kiện chính hãng")</title>
+
+    @* Preconnect for Google Fonts *@
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" />
+
+    @* Favicon *@
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+
+    @* Tailwind utilities are generated at build time. Existing global styles load after them. *@
+    <link rel="stylesheet" href="~/css/tailwind.css" asp-append-version="true" />
+
+    @* Global styles shared by every page. Page-specific styles are rendered below. *@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/e_commerce_web_customer.styles.css" asp-append-version="true" />
+
+    @* Page-specific styles section *@
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">e_commerce_web_customer</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <a class="skip-link" href="#main-content">Bỏ qua đến nội dung chính</a>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - e_commerce_web_customer - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+    @* ============================================================
+         SITE HEADER (ViewComponent)
+         The header is fixed; body has padding-top: var(--header-height)
+         in base.css to prevent content from hiding under it.
+    ============================================================ *@
+    @await Component.InvokeAsync("Header")
+
+    @* ============================================================
+         MAIN CONTENT
+    ============================================================ *@
+    <main id="main-content" role="main" class="main-content">
+        @RenderBody()
+    </main>
+
+    <partial name="_Footer" />
+
+    <div class="toast-container" id="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <button id="back-to-top" aria-label="Về đầu trang" title="Về đầu trang">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/>
+        </svg>
+    </button>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

@@ -1,0 +1,16 @@
+{
+  "name": "e-commerce-web-customer",
+  "private": true,
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "css:build": "tailwindcss -i ./wwwroot/css/tailwind.source.css -o ./wwwroot/css/tailwind.css --minify",
+    "css:watch": "tailwindcss -i ./wwwroot/css/tailwind.source.css -o ./wwwroot/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
+    "tailwindcss": "^4.3.0"
+  }
+}

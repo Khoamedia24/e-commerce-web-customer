@@ -1,0 +1,35 @@
+@import "tailwindcss" source(none);
+@import "./components/header.css";
+
+@source "../../Views/**/*.cshtml";
+@source "../js/**/*.js";
+
+@theme {
+  --font-sans: "Outfit", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --color-cellphones-50: #fbe6e8;
+  --color-cellphones-100: #f3b0b7;
+  --color-cellphones-200: #ed8a95;
+  --color-cellphones-300: #e45464;
+  --color-cellphones-400: #df3346;
+  --color-cellphones-500: #d70018;
+  --color-cellphones-600: #c40016;
+  --color-cellphones-700: #990011;
+  --color-cellphones-800: #76000d;
+  --color-cellphones-900: #5a000a;
+
+  --color-search-border: #cfcfd3;
+  --color-search-text: #52525b;
+
+  --animate-header-marquee: header-marquee 30s linear infinite;
+
+  @keyframes header-marquee {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}

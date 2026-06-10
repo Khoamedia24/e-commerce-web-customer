@@ -5,18 +5,30 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>e_commerce_web_customer</RootNamespace>
+    <NpmExecutable Condition="'$(OS)' == 'Windows_NT'">npm.cmd</NpmExecutable>
+    <NpmExecutable Condition="'$(OS)' != 'Windows_NT'">npm</NpmExecutable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.7" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.7">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
+    <!-- Override vulnerable transitive dependencies to fix warnings (v6.13.1 fixes GHSA-g4vj-cjjj-v7hg) -->
+    <PackageReference Include="NuGet.Packaging" Version="6.13.1" />
+    <PackageReference Include="NuGet.Protocol" Version="6.13.1" />
   </ItemGroup>
+
+  <Target
+    Name="RestoreFrontendDependencies"
+    Inputs="package-lock.json"
+    Outputs="node_modules/.package-lock.json">
+    <Message Importance="high" Text="Restoring frontend dependencies with npm ci..." />
+    <Exec Command="$(NpmExecutable) ci" />
+  </Target>
+
+  <Target
+    Name="BuildTailwindCss"
+    BeforeTargets="PrepareForBuild"
+    DependsOnTargets="RestoreFrontendDependencies">
+    <Exec Command="$(NpmExecutable) run css:build" />
+  </Target>
 
 </Project>

@@ -7,3 +7,4 @@ appsettings.*.json
 bin/
 obj/
 .agents/
+node_modules/

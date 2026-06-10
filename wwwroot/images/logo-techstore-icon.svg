@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 85 90" role="img" aria-labelledby="ts-logo-title">
+  <title id="ts-logo-title">TechStore Icon</title>
+  <g id="ts-icon">
+    <!-- Top Bar: continuous, spans the full width of the icon with slanted ends -->
+    <polygon points="13,15 80,15 72,25 5,25" fill="#ffffff"/>
+
+    <!-- Bottom Left Component (Stems & Left Wing) -->
+    <polygon points="18,29 38,29 38,63 26,75 26,39 10,39" fill="#ffffff"/>
+
+    <!-- Bottom Right Component (Stems & Right Wing, shorter bottom height) -->
+    <polygon points="41,29 70,29 62,39 53,39 53,53 41,65" fill="#ffffff"/>
+  </g>
+</svg>

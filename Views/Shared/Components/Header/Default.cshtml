@@ -1,0 +1,141 @@
+@* =====================================================================
+   HEADER COMPONENT - Views/Shared/Components/Header/Default.cshtml
+
+   Structure:
+   1. Announcement bar
+   2. Main row: logo, category link, location, search and account actions
+   ===================================================================== *@
+
+<header
+    id="site-header"
+    class="fixed inset-x-0 top-0 z-[1000] flex w-full flex-col items-center bg-cellphones-500 text-white"
+    role="banner">
+
+    @* ========= TOP BAR (Announcement Strip) ========= *@
+    <div class="h-8 w-full overflow-hidden border-b border-white/15 bg-cellphones-500/95" aria-label="Thông báo ưu đãi">
+        <div class="header-content flex h-full items-center gap-3 px-2 sm:gap-6">
+            <div class="header-marquee-mask relative flex-1 overflow-hidden" role="marquee" aria-live="off">
+                <div class="header-marquee-track flex w-max animate-header-marquee items-center gap-4 sm:gap-6" id="topbar-marquee-track">
+                    @* Render the same sequence twice to keep the marquee loop seamless. *@
+                    <partial name="~/Views/Shared/Components/Header/_AnnouncementItems.cshtml" />
+                    <partial name="~/Views/Shared/Components/Header/_AnnouncementItems.cshtml" />
+                </div>
+            </div>
+
+            <nav class="hidden shrink-0 items-center gap-3 md:flex xl:gap-5" aria-label="Liên kết nhanh">
+                <a class="header-quick-link hidden xl:flex" href="/stores" id="topbar-store-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 25 25" aria-hidden="true">
+                        <path stroke="white" stroke-linecap="round" stroke-width="1.5" d="M8.32 22.66h8.36c2.31 0 4.18-1.786 4.18-3.99v-4.877c0-.708.296-1.387.82-1.888 1.216-1.16 1.058-3.083-.332-4.048l-6.39-4.434a4.343 4.343 0 0 0-4.917 0L3.653 7.857c-1.391.965-1.55 2.888-.333 4.048.524.5.82 1.18.82 1.888v4.878c0 2.203 1.87 3.989 4.18 3.989Z"/>
+                    </svg>
+                    <span>Cửa hàng gần bạn</span>
+                </a>
+                <a class="header-quick-link hidden lg:flex xl:border-l xl:border-white/20 xl:pl-5" href="/orders/track" id="topbar-order-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 17 16" aria-hidden="true">
+                        <path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.833 2v2.667a.667.667 0 0 0 .667.666h2.667"/>
+                        <path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.167 8v4.667a1.187 1.187 0 0 1-2.067.933 1.1 1.1 0 0 0-1.733 0 1.1 1.1 0 0 1-1.734 0 1.1 1.1 0 0 0-1.733 0 1.187 1.187 0 0 1-2.067-.933V3.333A1.333 1.333 0 0 1 5.167 2h4.666l3.334 3.333v2.834"/>
+                    </svg>
+                    <span>Tra cứu đơn hàng</span>
+                </a>
+                <a class="header-quick-link flex lg:border-l lg:border-white/20 lg:pl-4 xl:pl-5" href="tel:19001234" id="topbar-phone-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true">
+                        <path d="M144.27,45.93a8,8,0,0,1,9.8-5.66,86.22,86.22,0,0,1,61.66,61.66,8,8,0,0,1-5.66,9.8A8.23,8.23,0,0,1,208,112a8,8,0,0,1-7.73-5.94,70.35,70.35,0,0,0-50.33-50.33A8,8,0,0,1,144.27,45.93Zm-2.33,41.8c13.79,3.68,22.65,12.54,26.33,26.33A8,8,0,0,0,176,120a8.23,8.23,0,0,0,2.07-.27,8,8,0,0,0,5.66-9.8c-5.12-19.16-18.5-32.54-37.66-37.66a8,8,0,1,0-4.13,15.46Zm81.94,95.35A56.26,56.26,0,0,1,168,232C88.6,232,24,167.4,24,88A56.26,56.26,0,0,1,72.92,32.12a16,16,0,0,1,16.62,9.52l21.12,47.15,0,.12A16,16,0,0,1,109.39,104c-.18.27-.37.52-.57.77L88,129.45c7.49,15.22,23.41,31,38.83,38.51l24.34-20.71a8.12,8.12,0,0,1,.75-.56,16,16,0,0,1,15.17-1.4l.13.06,47.11,21.11A16,16,0,0,1,223.88,183.08Z"/>
+                    </svg>
+                    <span>1900 1234</span>
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    @* ========= MAIN HEADER ROW ========= *@
+    <div class="header-main-row w-full">
+        <div class="header-content header-primary-row flex min-w-0 items-center justify-center">
+            <a class="header-logo-link flex h-[42.56px] shrink-0 items-center transition-all duration-300 hover:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cellphones-500" href="/" title="TechStore - Trang chủ" id="header-logo-link">
+                <img src="~/images/logo-techstore-icon.svg" alt="TechStore" width="42.56" height="45" class="header-logo-mobile" />
+                <img src="~/images/logo-techstore.svg" alt="TechStore" width="150" height="45" class="header-logo-desktop" />
+            </a>
+
+            <a class="header-action header-action--filled hidden h-10 w-10 gap-2 p-0 text-sm font-semibold md:flex xl:w-[155px] xl:px-4" asp-controller="Catalog" asp-action="Index" aria-label="Danh mục sản phẩm">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M4.7 4H10.7V10H4.7V4Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14.7 4H20.7V10H14.7V4Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4.7 14H10.7V20H4.7V14Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14.7 17C14.7 17.8 15 18.6 15.6 19.1C16.1 19.7 16.9 20 17.7 20C18.5 20 19.3 19.7 19.8 19.1C20.4 18.6 20.7 17.8 20.7 17C20.7 16.2 20.4 15.4 19.8 14.9C19.3 14.3 18.5 14 17.7 14C16.9 14 16.1 14.3 15.6 14.9C15 15.4 14.7 16.2 14.7 17Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="hidden xl:inline">Danh mục</span>
+                <svg class="hidden xl:block" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"/>
+                </svg>
+            </a>
+
+            <button class="header-action header-action--filled hidden h-10 w-[169.16px] gap-2 px-3 text-sm xl:flex" id="btn-location" aria-label="Chọn thành phố" type="button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 20 21" aria-hidden="true">
+                    <path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7.5 9.528a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0Z"/>
+                    <path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.85 18.033a1.666 1.666 0 0 1-2.027-.255l-3.537-3.536a6.667 6.667 0 1 1 11.34-5.462M17.5 12.861h-2.083a1.25 1.25 0 0 0 0 2.5h.833a1.25 1.25 0 0 1 0 2.5h-2.083M15.833 17.861v.834m0-6.667v.833"/>
+                </svg>
+                <span id="selected-city">Hồ Chí Minh</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"/>
+                </svg>
+            </button>
+
+            <button class="header-action header-action--filled flex h-10 w-10 p-0 sm:w-auto sm:gap-2 sm:px-2 xl:hidden" id="btn-location-mobile" aria-label="Xem giá tại thành phố" type="button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 20 21" aria-hidden="true">
+                    <path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7.5 9.528a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0Z"/>
+                    <path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.85 18.033a1.666 1.666 0 0 1-2.027-.255l-3.537-3.536a6.667 6.667 0 1 1 11.34-5.462M17.5 12.861h-2.083a1.25 1.25 0 0 0 0 2.5h.833a1.25 1.25 0 0 1 0 2.5h-2.083M15.833 17.861v.834m0-6.667v.833"/>
+                </svg>
+                <div class="hidden flex-col items-start sm:flex">
+                    <span class="text-[10px] leading-tight text-white/80">Xem giá tại</span>
+                    <strong class="text-[11px] leading-tight">HCM</strong>
+                </div>
+            </button>
+
+            <div class="min-w-[72px] flex-1 xl:w-[387.73px] xl:flex-none" role="search">
+                <form class="flex h-10 items-center overflow-hidden rounded border border-search-border bg-white shadow-sm transition-all duration-300 focus-within:border-cellphones-500 focus-within:ring-2 focus-within:ring-cellphones-100" action="/search" method="get" id="header-search-form" autocomplete="off">
+                    <label for="header-search-input" class="sr-only">Tìm kiếm sản phẩm</label>
+                    <div class="flex shrink-0 items-center justify-center px-2 text-search-text sm:px-3 xl:w-[47.73px] xl:px-0" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 512 512">
+                            <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32" d="M221.09 64a157.09 157.09 0 1 0 157.09 157.09A157.1 157.1 0 0 0 221.09 64z"/>
+                            <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32" d="M338.29 338.29 448 448"/>
+                        </svg>
+                    </div>
+                    <input
+                        type="search"
+                        name="q"
+                        id="header-search-input"
+                        class="h-6 min-w-0 flex-1 bg-transparent pr-2 text-sm text-search-text outline-none placeholder:text-zinc-400 sm:pr-5 xl:w-[338px] xl:flex-none xl:pr-4"
+                        placeholder="Bạn muốn mua gì hôm nay?"
+                        aria-label="Tìm kiếm sản phẩm"
+                    />
+                </form>
+            </div>
+
+            <a class="header-action header-action--ghost relative hidden h-10 w-[108px] gap-2 px-3 text-sm font-medium lg:flex" href="/cart" id="header-cart-link" aria-label="Giỏ hàng">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 512 512" aria-hidden="true">
+                    <circle cx="176" cy="416" r="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/>
+                    <circle cx="400" cy="416" r="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/>
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M48 80h64l48 272h256"/>
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M160 288h249.44a8 8 0 0 0 7.85-6.43l28.8-144a8 8 0 0 0-7.85-9.57H128"/>
+                </svg>
+                <span>Giỏ hàng</span>
+                <span class="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-cellphones-500 bg-white px-1 text-[10px] font-bold leading-none text-cellphones-500" id="cart-item-count" aria-label="0 sản phẩm trong giỏ" hidden>0</span>
+            </a>
+
+            <a class="header-action header-action--filled hidden h-10 w-[131.94px] gap-2 px-3 text-sm font-medium lg:flex" id="btn-login" asp-controller="Account" asp-action="Login">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 496 512" aria-hidden="true">
+                    <path d="M248 104c-53 0-96 43-96 96s43 96 96 96 96-43 96-96-43-96-96-96zm0 144c-26.5 0-48-21.5-48-48s21.5-48 48-48 48 21.5 48 48-21.5 48-48 48zm0-240C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-49.7 0-95.1-18.3-130.1-48.4 14.9-23 40.4-38.6 69.6-39.5 20.8 6.4 40.6 9.6 60.5 9.6s39.7-3.1 60.5-9.6c29.2 1 54.7 16.5 69.6 39.5-35 30.1-80.4 48.4-130.1 48.4zm162.7-84.1c-24.4-31.4-62.1-51.9-105.1-51.9-10.2 0-26 9.6-57.6 9.6-31.5 0-47.4-9.6-57.6-9.6-42.9 0-80.6 20.5-105.1 51.9C61.9 339.2 48 299.2 48 256c0-110.3 89.7-200 200-200s200 89.7 200 200c0 43.2-13.9 83.2-37.3 115.9z"/>
+                </svg>
+                <span>Đăng nhập</span>
+            </a>
+
+            <a class="header-action header-action--filled relative flex min-h-10 min-w-10 p-2 lg:hidden" href="/cart" aria-label="Giỏ hàng">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 512 512" aria-hidden="true">
+                    <circle cx="176" cy="416" r="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/>
+                    <circle cx="400" cy="416" r="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/>
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M48 80h64l48 272h256"/>
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M160 288h249.44a8 8 0 0 0 7.85-6.43l28.8-144a8 8 0 0 0-7.85-9.57H128"/>
+                </svg>
+                <span class="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-cellphones-500 bg-white px-1 text-[10px] font-bold leading-none text-cellphones-500" id="cart-item-count-mobile" aria-label="0 sản phẩm trong giỏ" hidden>0</span>
+            </a>
+        </div>
+    </div>
+</header>

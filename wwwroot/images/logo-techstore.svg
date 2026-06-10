@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 90" role="img" aria-labelledby="ts-logo-title">
+  <title id="ts-logo-title">TechStore - Công nghệ cho cuộc sống</title>
+
+  <!-- ===== Double-T Icon ===== -->
+  <g id="ts-icon">
+    <!-- Top Bar: continuous, spans the full width of the icon with slanted ends -->
+    <polygon points="13,15 80,15 72,25 5,25" fill="#ffffff"/>
+
+    <!-- Bottom Left Component (Stems & Left Wing) -->
+    <polygon points="18,29 38,29 38,63 26,75 26,39 10,39" fill="#ffffff"/>
+
+    <!-- Bottom Right Component (Stems & Right Wing, shorter bottom height) -->
+    <polygon points="41,29 70,29 62,39 53,39 53,53 41,65" fill="#ffffff"/>
+  </g>
+
+  <!-- ===== Wordmark ===== -->
+  <text
+    x="93"
+    y="60"
+    font-family="'Segoe UI', Arial, sans-serif"
+    font-size="46"
+    letter-spacing="-1.5"
+    fill="#ffffff"
+  ><tspan font-weight="800">Tech</tspan><tspan font-weight="400">Store</tspan></text>
+
+  <!-- ===== Tagline ===== -->
+  <!-- Left rule -->
+  <line x1="93" y1="72" x2="101" y2="72" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.6"/>
+  <!-- Tagline text (Centered under TechStore which ends around x=288) -->
+  <text
+    x="190"
+    y="76"
+    text-anchor="middle"
+    font-family="'Segoe UI', Arial, sans-serif"
+    font-size="8.5"
+    font-weight="600"
+    fill="#ffffff"
+    fill-opacity="0.9"
+    letter-spacing="2.2"
+  >CÔNG NGHỆ CHO CUỘC SỐNG</text>
+  <!-- Right rule -->
+  <line x1="279" y1="72" x2="288" y2="72" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.6"/>
+</svg>
