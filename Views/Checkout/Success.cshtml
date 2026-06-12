@@ -1,1 +1,206 @@
+@model CheckoutSuccessViewModel
+@using e_commerce_web_customer.ViewModels.Checkout
 
+@{
+    ViewData["Title"] = "Đặt hàng thành công";
+    ViewData["MetaDescription"] = "Đơn hàng của bạn đã được TechStore tiếp nhận. Xem thông tin giao hàng, sản phẩm và tổng thanh toán.";
+    var hasDiscount = !string.Equals(Model.DiscountText, "0đ", StringComparison.OrdinalIgnoreCase);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/checkout-success.css" asp-append-version="true" />
+}
+
+<section class="checkout-success-page" aria-labelledby="checkout-success-title">
+    <div class="success-container">
+        <section class="success-hero" aria-label="Xác nhận đặt hàng thành công">
+            <div class="success-brand-orbit" aria-hidden="true">
+                <span class="success-spark spark-1"></span>
+                <span class="success-spark spark-2"></span>
+                <span class="success-spark spark-3"></span>
+                <span class="success-spark spark-4"></span>
+                <span class="success-logo-mark">
+                    <img src="~/images/logo-techstore-icon.svg" alt="" width="54" height="58" />
+                </span>
+            </div>
+
+            <div class="success-hero-content">
+                <h1 id="checkout-success-title">Đặt hàng thành công!</h1>
+                <p>
+                    Cảm ơn bạn đã mua sắm. Đơn hàng của bạn đã được xác nhận và đang chờ xử lý.
+                </p>
+
+                <div class="success-hero-facts" aria-label="Thông tin nhanh của đơn hàng">
+                    <div class="success-fact">
+                        <span class="success-fact-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M7 3.5h7l3 3V20.5H7V3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                                <path d="M14 3.5V7h3M9.5 11h5M9.5 14.5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                            </svg>
+                        </span>
+                        <div>
+                            <span>Mã đơn hàng:</span>
+                            <strong>#@Model.OrderCode</strong>
+                        </div>
+                    </div>
+
+                    <div class="success-fact-divider" aria-hidden="true"></div>
+
+                    <div class="success-fact">
+                        <span class="success-fact-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <rect x="4" y="5.5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                <path d="M8 3.5v4M16 3.5v4M4 10h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                            </svg>
+                        </span>
+                        <div>
+                            <span>Dự kiến giao hàng:</span>
+                            <strong>@Model.EstimatedDeliveryDateText</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="success-card-grid">
+            <section class="success-card" aria-labelledby="success-shipping-title">
+                <header class="success-card-header">
+                    <span class="success-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 21s7-5.35 7-11a7 7 0 1 0-14 0c0 5.65 7 11 7 11Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                            <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.7" />
+                        </svg>
+                    </span>
+                    <h2 id="success-shipping-title">Thông tin giao hàng</h2>
+                </header>
+
+                <dl class="success-detail-list">
+                    <div class="success-detail-row">
+                        <dt>
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20c1.45-3.4 4.05-5 7.5-5s6.05 1.6 7.5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                            </svg>
+                            Người nhận:
+                        </dt>
+                        <dd>@Model.CustomerName</dd>
+                    </div>
+                    <div class="success-detail-row">
+                        <dt>
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M6.5 10.5c1.15 3.9 3.1 5.85 7 7l2.05-2.05 4 1.3v3.05c0 .65-.52 1.18-1.17 1.18C9.9 20.98 3.02 14.1 3.02 5.62c0-.65.53-1.17 1.18-1.17h3.05l1.3 4-2.05 2.05Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                            </svg>
+                            Số điện thoại:
+                        </dt>
+                        <dd>@Model.Phone</dd>
+                    </div>
+                    <div class="success-detail-row">
+                        <dt>
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="m3.5 11 8.5-7 8.5 7v8.5H15v-5H9v5H3.5V11Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                            </svg>
+                            Địa chỉ:
+                        </dt>
+                        <dd>@Model.DeliveryAddress</dd>
+                    </div>
+                    <div class="success-detail-row">
+                        <dt>
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M3 6.5h11v10H3v-10ZM14 10h4l3 3v3.5h-7V10Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                                <circle cx="7" cy="18" r="1.8" stroke="currentColor" stroke-width="1.7" />
+                                <circle cx="18" cy="18" r="1.8" stroke="currentColor" stroke-width="1.7" />
+                            </svg>
+                            Phương thức giao hàng:
+                        </dt>
+                        <dd>@Model.ShippingMethodName</dd>
+                    </div>
+                    <div class="success-detail-row">
+                        <dt>
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <rect x="3.5" y="5.5" width="17" height="13" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                <path d="M3.5 9.5h17M7.5 14.5h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                            </svg>
+                            Thanh toán:
+                        </dt>
+                        <dd>@Model.PaymentMethodName</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="success-card" aria-labelledby="success-order-title">
+                <header class="success-card-header">
+                    <span class="success-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M7 3.5h7l3 3V20.5H7V3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                            <path d="M14 3.5V7h3M9.5 11h5M9.5 14.5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                        </svg>
+                    </span>
+                    <h2 id="success-order-title">Thông tin đơn hàng</h2>
+                </header>
+
+                <div class="success-order-head" aria-hidden="true">
+                    <span>Sản phẩm</span>
+                    <span>SL</span>
+                    <span>Thành tiền</span>
+                </div>
+
+                <ul class="success-order-items" aria-label="Sản phẩm trong đơn hàng">
+                    @foreach (var item in Model.Items)
+                    {
+                        <li class="success-order-item">
+                            <div class="success-product">
+                                <img src="@item.ImageUrl" alt="@item.ImageAlt" width="56" height="56" loading="lazy" />
+                                <div>
+                                    <strong>@item.Name</strong>
+                                    @if (!string.IsNullOrWhiteSpace(item.Variant))
+                                    {
+                                        <span>@item.Variant</span>
+                                    }
+                                </div>
+                            </div>
+                            <span class="success-quantity">SL: @item.Quantity</span>
+                            <strong class="success-line-total">@item.LineTotalText</strong>
+                        </li>
+                    }
+                </ul>
+
+                <dl class="success-price-list">
+                    <div>
+                        <dt>Tạm tính:</dt>
+                        <dd>@Model.SubtotalText</dd>
+                    </div>
+                    <div>
+                        <dt>Phí vận chuyển:</dt>
+                        <dd>@Model.ShippingFeeText</dd>
+                    </div>
+                    <div>
+                        <dt>Giảm giá:</dt>
+                        <dd class="@(hasDiscount ? "is-saving" : null)">@Model.DiscountText</dd>
+                    </div>
+                </dl>
+
+                <div class="success-total">
+                    <span>Tổng thanh toán:</span>
+                    <strong>@Model.TotalText</strong>
+                </div>
+            </section>
+        </div>
+
+        <div class="success-actions" aria-label="Hành động sau khi đặt hàng">
+            <a asp-controller="Home" asp-action="Index" class="success-btn success-btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M6.5 8.5h11l1 11h-13l1-11Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                    <path d="M9 9V7a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+                Tiếp tục mua sắm
+            </a>
+            <a href="/orders/track" class="success-btn success-btn-secondary">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M3 6.5h11v10H3v-10ZM14 10h4l3 3v3.5h-7V10Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                    <circle cx="7" cy="18" r="1.8" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="18" cy="18" r="1.8" stroke="currentColor" stroke-width="1.8" />
+                </svg>
+                Theo dõi đơn hàng
+            </a>
+        </div>
+    </div>
+</section>

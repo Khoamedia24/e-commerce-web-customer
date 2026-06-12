@@ -5,7 +5,7 @@
 @source "../js/**/*.js";
 
 @theme {
-  --font-sans: "Outfit", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-sans: "Roboto", "Inter", sans-serif;
 
   --color-cellphones-50: #fbe6e8;
   --color-cellphones-100: #f3b0b7;

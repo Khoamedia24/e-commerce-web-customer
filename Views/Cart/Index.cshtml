@@ -1,1 +1,181 @@
+@model CartIndexViewModel
 
+@{
+    ViewData["Title"] = "Giỏ hàng";
+    ViewData["MetaDescription"] = "Kiểm tra sản phẩm trong giỏ hàng và hoàn tất đơn mua tại TechStore.";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/cart.css" asp-append-version="true" />
+}
+
+<section class="cart-page" data-cart-page data-initial-count="@Model.ItemCount">
+    @* Hidden CSRF token — read by cart.js when calling /Cart/SaveSession *@
+    @Html.AntiForgeryToken()
+    <div class="container cart-container">
+        <div class="cart-layout">
+            <div class="cart-content">
+                <div class="cart-empty-state" data-cart-empty @(Model.IsEmpty ? null : "hidden")>
+                    <div class="cart-empty-icon" aria-hidden="true">
+                        <svg><use href="#hero-icon-cart"></use></svg>
+                    </div>
+                    <h2>Giỏ hàng của bạn đang trống</h2>
+                    <p>Khám phá sản phẩm công nghệ phù hợp và quay lại đây khi bạn sẵn sàng.</p>
+                </div>
+
+                <div class="cart-toolbar" data-cart-toolbar @(!Model.IsEmpty ? null : "hidden")>
+                    <label class="cart-select-all-label">
+                        <input type="checkbox"
+                               id="cart-select-all"
+                               aria-label="Chọn tất cả sản phẩm"
+                               data-cart-select-all />
+                        <span aria-hidden="true"></span>
+                        <span class="cart-select-all-text">
+                            Chọn tất cả
+                            <small data-cart-selected-count></small>
+                        </span>
+                    </label>
+
+                    <button class="cart-delete-selected-button"
+                            type="button"
+                            data-cart-delete-selected
+                            aria-label="Xóa các sản phẩm đã chọn">
+                        <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                  d="M8.75 1A1.75 1.75 0 0 0 7 2.75V3.5H4.25a.75.75 0 0 0 0 1.5h.32l.73 10.22A2.25 2.25 0 0 0 7.546 17.5h4.908a2.25 2.25 0 0 0 2.246-2.28L15.43 5H15.75a.75.75 0 0 0 0-1.5H13V2.75A1.75 1.75 0 0 0 11.25 1h-2.5ZM9 2.75a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25V3.5H9V2.75Zm-.97 5.47a.75.75 0 0 1 1.06 0L10 9.19l.91-.97a.75.75 0 1 1 1.09 1.03l-.97 1.03.97 1.03a.75.75 0 1 1-1.09 1.03L10 11.31l-.91.97a.75.75 0 1 1-1.09-1.03l.97-1.03-.97-1.03a.75.75 0 0 1 0-1.06Z" />
+                        </svg>
+                        Xóa đã chọn
+                    </button>
+                </div>
+
+                <div class="cart-items" data-cart-items @(!Model.IsEmpty ? null : "hidden")>
+                    @foreach (var item in Model.Items)
+                    {
+                        <article class="cart-item"
+                                 data-cart-item
+                                 data-product-id="@item.Id"
+                                 data-unit-price="@item.UnitPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                            <label class="cart-item-select">
+                                <input type="checkbox"
+                                       checked
+                                       aria-label="Chọn @item.Name"
+                                       data-cart-select />
+                                <span aria-hidden="true"></span>
+                            </label>
+
+                            <a class="cart-item-media" href="@item.ProductUrl" aria-label="Xem @item.Name">
+                                <img src="@item.ImageUrl"
+                                     alt="@item.ImageAlt"
+                                     width="180"
+                                     height="180" />
+                            </a>
+
+                            <div class="cart-item-info">
+                                <div>
+                                    <h2><a href="@item.ProductUrl">@item.Name</a></h2>
+                                    <button class="cart-item-variant"
+                                            type="button"
+                                            aria-label="Tùy chọn @item.Variant">
+                                        @item.Variant
+                                        <svg class="cart-item-variant-chevron" aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                                            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="cart-item-price">
+                                <strong>@CartIndexViewModel.FormatPrice(item.UnitPrice)</strong>
+                                @if (item.OldPrice.HasValue)
+                                {
+                                    <del>@CartIndexViewModel.FormatPrice(item.OldPrice.Value)</del>
+                                }
+                            </div>
+
+                            <div class="cart-quantity" aria-label="Số lượng @item.Name">
+                                <button type="button"
+                                        aria-label="Giảm số lượng @item.Name"
+                                        data-cart-decrease
+                                        @(item.Quantity <= 1 ? "disabled" : null)>−</button>
+                                <output data-cart-quantity>@item.Quantity</output>
+                                <button type="button"
+                                        aria-label="Tăng số lượng @item.Name"
+                                        data-cart-increase
+                                        data-max-quantity="@item.MaxQuantity">+</button>
+                            </div>
+
+                            <button class="cart-remove-button"
+                                    type="button"
+                                    data-cart-remove
+                                    aria-label="Xóa @item.Name khỏi giỏ hàng">
+                                <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                          d="M8.75 1A1.75 1.75 0 0 0 7 2.75V3.5H4.25a.75.75 0 0 0 0 1.5h.32l.73 10.22A2.25 2.25 0 0 0 7.546 17.5h4.908a2.25 2.25 0 0 0 2.246-2.28L15.43 5H15.75a.75.75 0 0 0 0-1.5H13V2.75A1.75 1.75 0 0 0 11.25 1h-2.5ZM9 2.75a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25V3.5H9V2.75Zm-.97 5.47a.75.75 0 0 1 1.06 0L10 9.19l.91-.97a.75.75 0 1 1 1.09 1.03l-.97 1.03.97 1.03a.75.75 0 1 1-1.09 1.03L10 11.31l-.91.97a.75.75 0 1 1-1.09-1.03l.97-1.03-.97-1.03a.75.75 0 0 1 0-1.06Z" />
+                                </svg>
+                            </button>
+                        </article>
+                    }
+                </div>
+
+                <div class="cart-service-strip" aria-label="Quyền lợi mua hàng">
+                    <div>
+                        <svg aria-hidden="true"><use href="#hero-icon-shield"></use></svg>
+                        <span><strong>Chính hãng</strong>Bảo hành minh bạch</span>
+                    </div>
+                    <div>
+                        <svg aria-hidden="true"><use href="#hero-icon-truck"></use></svg>
+                        <span><strong>Giao nhanh</strong>Miễn phí từ 300.000đ</span>
+                    </div>
+                    <div>
+                        <svg aria-hidden="true"><use href="#hero-icon-swap"></use></svg>
+                        <span><strong>Đổi trả dễ dàng</strong>Trong thời gian quy định</span>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="cart-summary" aria-labelledby="cart-summary-title">
+                <h2 id="cart-summary-title">Tóm tắt đơn hàng</h2>
+
+                <dl class="cart-summary-list">
+                    <div>
+                        <dt>Tạm tính</dt>
+                        <dd data-cart-subtotal>@CartIndexViewModel.FormatPrice(Model.Subtotal)</dd>
+                    </div>
+                    <div>
+                        <dt>Phí vận chuyển</dt>
+                        <dd data-cart-shipping data-value="@Model.ShippingFee.ToString(System.Globalization.CultureInfo.InvariantCulture)">@CartIndexViewModel.FormatPrice(Model.ShippingFee)</dd>
+                    </div>
+                    <div>
+                        <dt>Thuế</dt>
+                        <dd data-cart-tax data-value="@Model.Tax.ToString(System.Globalization.CultureInfo.InvariantCulture)">@CartIndexViewModel.FormatPrice(Model.Tax)</dd>
+                    </div>
+                </dl>
+
+                <div class="cart-summary-total">
+                    <span>Tổng cộng</span>
+                    <strong data-cart-total>@CartIndexViewModel.FormatPrice(Model.Total)</strong>
+                </div>
+
+                <a class="cart-checkout-button @(Model.IsEmpty ? "is-disabled" : null)"
+                   asp-controller="Checkout"
+                   asp-action="Index"
+                   aria-disabled="@Model.IsEmpty.ToString().ToLowerInvariant()"
+                   data-cart-checkout>
+                    Thanh toán
+                </a>
+
+                <a class="cart-continue-button" asp-controller="Home" asp-action="Index">
+                    Tiếp tục mua sắm
+                </a>
+
+                <p class="cart-summary-note">
+                    Giá và ưu đãi sẽ được xác nhận lại trước khi thanh toán.
+                </p>
+            </aside>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/cart.js" asp-append-version="true"></script>
+}

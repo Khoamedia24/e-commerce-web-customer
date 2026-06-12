@@ -1,1 +1,418 @@
+@model CheckoutViewModel
+@using e_commerce_web_customer.ViewModels.Checkout
 
+@{
+    ViewData["Title"] = "Thanh toán";
+    ViewData["MetaDescription"] = "Hoàn tất đơn hàng của bạn tại TechStore — điền thông tin giao hàng và chọn phương thức thanh toán.";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/checkout.css" asp-append-version="true" />
+}
+
+<section class="checkout-page" aria-label="Trang thanh toán">
+    <form asp-controller="Checkout" asp-action="Index" method="post" novalidate>
+        @Html.AntiForgeryToken()
+
+        <div class="checkout-layout">
+
+            @* ════════════════════════════════════════════════
+                 LEFT: Shipping + Payment
+            ════════════════════════════════════════════════ *@
+            <div class="checkout-left">
+
+                @* Validation summary *@
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                {
+                    <div class="co-validation-summary" role="alert">
+                        <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4Zm1-8a1.25 1.25 0 1 1 0 2.5A1.25 1.25 0 0 1 10 5Z" />
+                        </svg>
+                        <span>Vui lòng kiểm tra lại thông tin bên dưới trước khi đặt hàng.</span>
+                    </div>
+                }
+
+                @* ─── Step 1: Shipping info ────────────────── *@
+                <div class="co-card">
+                    <div class="co-section-header">
+                        <span class="co-section-step" aria-hidden="true">1</span>
+                        <h2 class="co-section-title">Thông tin giao hàng</h2>
+                    </div>
+
+                    <div class="co-form-body">
+                        <div class="co-form-grid">
+
+                            @* Full name *@
+                            <div class="co-field">
+                                <label asp-for="FullName" class="co-label">
+                                    Họ và tên <span class="required-star" aria-hidden="true">*</span>
+                                </label>
+                                <input asp-for="FullName"
+                                       class="co-input @(ViewData.ModelState["FullName"]?.Errors.Count > 0 ? "is-invalid" : null)"
+                                       placeholder="Nguyễn Văn A"
+                                       autocomplete="name" />
+                                <span asp-validation-for="FullName" class="co-field-error"></span>
+                            </div>
+
+                            @* Phone *@
+                            <div class="co-field">
+                                <label asp-for="Phone" class="co-label">
+                                    Số điện thoại <span class="required-star" aria-hidden="true">*</span>
+                                </label>
+                                <input asp-for="Phone"
+                                       class="co-input @(ViewData.ModelState["Phone"]?.Errors.Count > 0 ? "is-invalid" : null)"
+                                       placeholder="0901 234 567"
+                                       type="tel"
+                                       autocomplete="tel" />
+                                <span asp-validation-for="Phone" class="co-field-error"></span>
+                            </div>
+
+                            @* Email *@
+                            <div class="co-field col-span-2">
+                                <label asp-for="Email" class="co-label">
+                                    Email <span class="required-star" aria-hidden="true">*</span>
+                                </label>
+                                <input asp-for="Email"
+                                       class="co-input @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "is-invalid" : null)"
+                                       placeholder="example@email.com"
+                                       type="email"
+                                       autocomplete="email" />
+                                <span asp-validation-for="Email" class="co-field-error"></span>
+                            </div>
+
+                            @* Province *@
+                            <div class="co-field">
+                                <label asp-for="Province" class="co-label">
+                                    Tỉnh / Thành phố <span class="required-star" aria-hidden="true">*</span>
+                                </label>
+                                <select asp-for="Province"
+                                        id="co-province"
+                                        class="co-select @(ViewData.ModelState["Province"]?.Errors.Count > 0 ? "is-invalid" : null)"
+                                        data-server-value="@Model.Province">
+                                    <option value="">Đang tải...</option>
+                                </select>
+                                <span asp-validation-for="Province" class="co-field-error"></span>
+                            </div>
+
+                            @* District *@
+                            <div class="co-field">
+                                <label asp-for="District" class="co-label">
+                                    Quận / Huyện <span class="required-star" aria-hidden="true">*</span>
+                                </label>
+                                <select asp-for="District"
+                                        id="co-district"
+                                        class="co-select @(ViewData.ModelState["District"]?.Errors.Count > 0 ? "is-invalid" : null)"
+                                        disabled>
+                                    <option value="">-- Chọn Quận / Huyện --</option>
+                                </select>
+                                <span asp-validation-for="District" class="co-field-error"></span>
+                            </div>
+
+                            @* Ward *@
+                            <div class="co-field">
+                                <label asp-for="Ward" class="co-label">
+                                    Phường / Xã <span class="required-star" aria-hidden="true">*</span>
+                                </label>
+                                <select asp-for="Ward"
+                                        id="co-ward"
+                                        class="co-select @(ViewData.ModelState["Ward"]?.Errors.Count > 0 ? "is-invalid" : null)"
+                                        disabled>
+                                    <option value="">-- Chọn Phường / Xã --</option>
+                                </select>
+                                <span asp-validation-for="Ward" class="co-field-error"></span>
+                            </div>
+
+                            @* Address detail *@
+                            <div class="co-field col-span-2">
+                                <label asp-for="AddressDetail" class="co-label">
+                                    Địa chỉ cụ thể <span class="required-star" aria-hidden="true">*</span>
+                                </label>
+                                <input asp-for="AddressDetail"
+                                       class="co-input @(ViewData.ModelState["AddressDetail"]?.Errors.Count > 0 ? "is-invalid" : null)"
+                                       placeholder="Số nhà, tên đường, tòa nhà..."
+                                       autocomplete="street-address" />
+                                <span asp-validation-for="AddressDetail" class="co-field-error"></span>
+                            </div>
+
+                            @* Google Map picker *@
+                            <div class="col-span-2">
+                                <div class="co-map-row">
+                                    <div class="co-map-info">
+                                        <div class="co-map-icon-wrap" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                                      d="M11.54 22.351l.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-2.079 3.5-4.976 3.5-8.326 0-3.563-2.243-6.62-5.4-7.79a7.56 7.56 0 0 0-4.786.001C6.243 4.13 4 7.187 4 10.75c0 3.35 1.556 6.247 3.5 8.326a19.583 19.583 0 0 0 2.743 2.319 16.984 16.984 0 0 0 1.297.956ZM12 13.5a2.75 2.75 0 1 0 0-5.5 2.75 2.75 0 0 0 0 5.5Z" />
+                                            </svg>
+                                        </div>
+                                        <div class="co-map-text">
+                                            <strong>Chọn vị trí trên bản đồ</strong>
+                                            <span>Xác định địa chỉ chính xác với Google Maps</span>
+                                        </div>
+                                    </div>
+
+                                    <button type="button"
+                                            id="co-map-open"
+                                            class="co-map-button"
+                                            aria-haspopup="dialog"
+                                            aria-controls="co-map-modal">
+                                        <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" />
+                                        </svg>
+                                        Mở bản đồ
+                                    </button>
+                                </div>
+                            </div>
+
+                            @* Note *@
+                            <div class="co-field col-span-2">
+                                <label asp-for="Note" class="co-label">Ghi chú đơn hàng</label>
+                                <textarea asp-for="Note"
+                                          class="co-textarea"
+                                          placeholder="Ví dụ: Gọi trước khi giao, giao giờ hành chính..."></textarea>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                @* ─── Step 2: Payment method ───────────────── *@
+                <div class="co-card">
+                    <div class="co-section-header">
+                        <span class="co-section-step" aria-hidden="true">2</span>
+                        <h2 class="co-section-title">Phương thức thanh toán</h2>
+                    </div>
+
+                    <div class="co-form-body">
+                        <div class="co-payment-grid" role="radiogroup" aria-label="Chọn phương thức thanh toán">
+
+                            @* COD *@
+                            <div class="co-payment-option">
+                                <input type="radio"
+                                       name="PaymentMethod"
+                                       id="pay-cod"
+                                       value="0"
+                                       @(Model.PaymentMethod == PaymentMethod.Cod ? "checked" : null) />
+                                <label for="pay-cod" class="co-payment-label">
+                                    <span class="co-payment-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <path d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"
+                                                  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </span>
+                                    <span class="co-payment-name">Tiền mặt</span>
+                                    <span class="co-payment-sub">Thanh toán khi nhận hàng</span>
+                                </label>
+                            </div>
+
+                            @* Bank Transfer *@
+                            <div class="co-payment-option">
+                                <input type="radio"
+                                       name="PaymentMethod"
+                                       id="pay-bank"
+                                       value="1"
+                                       @(Model.PaymentMethod == PaymentMethod.BankTransfer ? "checked" : null) />
+                                <label for="pay-bank" class="co-payment-label">
+                                    <span class="co-payment-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <path d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z"
+                                                  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </span>
+                                    <span class="co-payment-name">Chuyển khoản</span>
+                                    <span class="co-payment-sub">Ngân hàng nội địa</span>
+                                </label>
+                            </div>
+
+                            @* MoMo *@
+                            <div class="co-payment-option">
+                                <input type="radio"
+                                       name="PaymentMethod"
+                                       id="pay-momo"
+                                       value="2"
+                                       @(Model.PaymentMethod == PaymentMethod.Momo ? "checked" : null) />
+                                <label for="pay-momo" class="co-payment-label">
+                                    <span class="co-payment-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 48 48" fill="none">
+                                            <rect width="48" height="48" rx="12" fill="#B0006D" />
+                                            <text x="24" y="31" text-anchor="middle" font-size="16" font-weight="800" fill="#fff" font-family="system-ui, sans-serif">MoMo</text>
+                                        </svg>
+                                    </span>
+                                    <span class="co-payment-name">MoMo</span>
+                                    <span class="co-payment-sub">Ví điện tử</span>
+                                </label>
+                            </div>
+
+                            @* VNPay *@
+                            <div class="co-payment-option">
+                                <input type="radio"
+                                       name="PaymentMethod"
+                                       id="pay-vnpay"
+                                       value="3"
+                                       @(Model.PaymentMethod == PaymentMethod.VnPay ? "checked" : null) />
+                                <label for="pay-vnpay" class="co-payment-label">
+                                    <span class="co-payment-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 48 48" fill="none">
+                                            <rect width="48" height="48" rx="12" fill="#005BAA" />
+                                            <text x="24" y="31" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" font-family="system-ui, sans-serif">VNPAY</text>
+                                        </svg>
+                                    </span>
+                                    <span class="co-payment-name">VNPay</span>
+                                    <span class="co-payment-sub">Cổng thanh toán</span>
+                                </label>
+                            </div>
+
+                            @* ZaloPay *@
+                            <div class="co-payment-option">
+                                <input type="radio"
+                                       name="PaymentMethod"
+                                       id="pay-zalopay"
+                                       value="4"
+                                       @(Model.PaymentMethod == PaymentMethod.ZaloPay ? "checked" : null) />
+                                <label for="pay-zalopay" class="co-payment-label">
+                                    <span class="co-payment-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 48 48" fill="none">
+                                            <rect width="48" height="48" rx="12" fill="#0068FF" />
+                                            <text x="24" y="31" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="system-ui, sans-serif">ZaloPay</text>
+                                        </svg>
+                                    </span>
+                                    <span class="co-payment-name">ZaloPay</span>
+                                    <span class="co-payment-sub">Ví điện tử</span>
+                                </label>
+                            </div>
+
+                        </div>
+
+                        @* COD info note *@
+                        <div id="co-cod-info" class="co-cod-info" role="note" aria-live="polite">
+                            <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z" />
+                            </svg>
+                            <span>Bạn sẽ thanh toán bằng <strong>tiền mặt</strong> khi nhận hàng. Vui lòng chuẩn bị đúng số tiền để giao dịch nhanh hơn.</span>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>@* /checkout-left *@
+
+            @* ════════════════════════════════════════════════
+                 RIGHT: Order summary + submit
+            ════════════════════════════════════════════════ *@
+            <aside class="checkout-summary" aria-labelledby="co-summary-heading">
+                <div class="co-card co-summary-card">
+
+                    <h2 id="co-summary-heading" class="co-summary-title">Tóm tắt đơn hàng</h2>
+
+                    @* Item list *@
+                    <ul class="co-order-items" aria-label="Sản phẩm trong đơn">
+                        @foreach (var item in Model.Items)
+                        {
+                            <li class="co-order-item">
+                                <div class="co-order-thumb" aria-hidden="true">
+                                    <img src="@item.ImageUrl" alt="@item.ImageAlt" width="56" height="56" />
+                                    <span class="co-order-qty-badge">@item.Quantity</span>
+                                </div>
+                                <div class="co-order-info">
+                                    <p class="co-order-name">@item.Name</p>
+                                    @if (!string.IsNullOrEmpty(item.Variant))
+                                    {
+                                        <p class="co-order-variant">@item.Variant</p>
+                                    }
+                                    <p class="co-order-qty-text">Số lượng: <strong>@item.Quantity</strong></p>
+                                </div>
+                                <p class="co-order-price">@CheckoutViewModel.FormatPrice(item.UnitPrice * item.Quantity)</p>
+                            </li>
+                        }
+                    </ul>
+
+                    @* Price breakdown *@
+                    <dl class="co-price-list">
+                        <div class="co-price-row">
+                            <dt>Tạm tính</dt>
+                            <dd>@CheckoutViewModel.FormatPrice(Model.Subtotal)</dd>
+                        </div>
+                        <div class="co-price-row">
+                            <dt>Phí vận chuyển</dt>
+                            <dd>@CheckoutViewModel.FormatPrice(Model.ShippingFee)</dd>
+                        </div>
+                        @if (Model.Discount > 0)
+                        {
+                            <div class="co-price-row is-discount">
+                                <dt>Giảm giá</dt>
+                                <dd>−@CheckoutViewModel.FormatPrice(Model.Discount)</dd>
+                            </div>
+                        }
+                    </dl>
+
+                    @* Total *@
+                    <div class="co-price-total">
+                        <span class="label">Tổng cộng</span>
+                        <strong class="amount">@CheckoutViewModel.FormatPrice(Model.Total)</strong>
+                    </div>
+
+                    @* Submit *@
+                    <button type="submit" class="co-submit-btn">
+                        <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" />
+                        </svg>
+                        Đặt hàng ngay
+                    </button>
+
+                    <p class="co-security-note">
+                        <svg aria-hidden="true" viewBox="0 0 16 16" fill="currentColor">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M8 1a3.5 3.5 0 0 0-3.5 3.5V7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7V4.5A3.5 3.5 0 0 0 8 1Zm2 6V4.5a2 2 0 1 0-4 0V7h4Z" />
+                        </svg>
+                        Thông tin được mã hóa SSL và bảo mật tuyệt đối.
+                    </p>
+
+                </div>
+            </aside>
+
+        </div>@* /checkout-layout *@
+    </form>
+</section>
+
+@* ════ Google Map Modal (portal at bottom of body) ════════════ *@
+<div id="co-map-modal"
+     class="co-map-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="co-map-modal-title"
+     tabindex="-1">
+    <div class="co-map-modal-box">
+        <div class="co-map-modal-header">
+            <h2 id="co-map-modal-title">Chọn vị trí trên Google Maps</h2>
+            <button type="button"
+                    id="co-map-close"
+                    class="co-map-close"
+                    aria-label="Đóng bản đồ">
+                <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                </svg>
+            </button>
+        </div>
+
+        <iframe id="co-map-iframe"
+                class="co-map-embed"
+                src="about:blank"
+                title="Google Maps — chọn địa chỉ giao hàng"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                allowfullscreen>
+        </iframe>
+
+        <div class="co-map-modal-footer">
+            <button type="button"
+                    id="co-map-close-footer"
+                    class="co-map-button"
+                    onclick="document.getElementById('co-map-close').click()">
+                Xác nhận vị trí
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/checkout.js" asp-append-version="true"></script>
+}

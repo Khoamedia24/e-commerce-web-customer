@@ -1,0 +1,797 @@
+/* ================================================================
+   checkout.css  —  TechStore Checkout Page
+   Tone: #f7f7f8 background · #d70018 accent · white cards
+   Matches the cart page design language exactly.
+================================================================ */
+
+/* ── Page shell ─────────────────────────────────────────────── */
+.checkout-page {
+  min-height: 70vh;
+  padding-block: clamp(1rem, 2vw, 2rem) clamp(4rem, 7vw, 7rem);
+  background: #f7f7f8;
+  color: #202024;
+}
+
+/* ── Layout: form (left) + summary sidebar (right) ─────────── */
+.checkout-layout {
+  display: grid;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 25rem);
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+}
+
+/* ── Shared card surface ────────────────────────────────────── */
+.co-card {
+  border: 1px solid #ededf0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 12px 36px rgba(43, 43, 50, 0.05);
+}
+
+/* ── Section header inside each card ───────────────────────── */
+.co-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f0f0f3;
+}
+
+.co-section-step {
+  display: grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #d70018;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.co-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: #111116;
+}
+
+/* ── Left column ────────────────────────────────────────────── */
+.checkout-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Form grid inside cards ─────────────────────────────────── */
+.co-form-body {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.co-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.25rem;
+}
+
+.co-form-grid .col-span-2 {
+  grid-column: span 2;
+}
+
+/* ── Form field ─────────────────────────────────────────────── */
+.co-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.co-label {
+  color: #444450;
+  font-size: 0.825rem;
+  font-weight: 650;
+}
+
+.co-label .required-star {
+  color: #d70018;
+  margin-left: 2px;
+}
+
+.co-input,
+.co-select,
+.co-textarea {
+  width: 100%;
+  padding: 0.65rem 0.875rem;
+  border: 1px solid #d4d4da;
+  border-radius: 9px;
+  background: #fafafa;
+  color: #111116;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: border-color 140ms ease, background 140ms ease;
+  outline: none;
+}
+
+.co-input:hover,
+.co-select:hover,
+.co-textarea:hover {
+  border-color: #b2b2bc;
+  background-color: #ffffff;
+}
+
+.co-input:focus,
+.co-select:focus,
+.co-textarea:focus {
+  border-color: #d70018;
+  background-color: #ffffff;
+  box-shadow: none;
+}
+
+.co-input.is-invalid,
+.co-select.is-invalid,
+.co-textarea.is-invalid,
+.co-input.input-validation-error,
+.co-select.input-validation-error,
+.co-textarea.input-validation-error {
+  border-color: #d70018;
+  background-color: #fff8f8;
+  box-shadow: none;
+}
+
+.co-field-error {
+  display: none; /* hidden by default — shown only when ASP.NET populates it */
+  align-items: center;
+  gap: 0.3rem;
+  color: #c0001a;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding-left: 1.1rem;
+  position: relative;
+}
+
+/* Only show when the span has text content (populated by validation) */
+.co-field-error:not(:empty) {
+  display: flex;
+}
+
+/* Icon via CSS — no SVG markup needed inside the span */
+.co-field-error:not(:empty)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0.82rem;
+  height: 0.82rem;
+  flex: 0 0 auto;
+  background-color: #c0001a;
+  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm-.75 3.75a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-1.5 0v-3.5ZM8 11a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z'/%3E%3C/svg%3E");
+  mask-repeat: no-repeat;
+  mask-size: contain;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='currentColor' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm-.75 3.75a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-1.5 0v-3.5ZM8 11a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+}
+
+.co-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%2374747c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.25rem;
+  cursor: pointer;
+}
+
+.co-select:disabled {
+  background-color: #f0f0f4;
+  color: #a0a0aa;
+  cursor: not-allowed;
+  border-color: #e0e0e6;
+  opacity: 1; /* override browser default dimming */
+}
+
+.co-textarea {
+  resize: vertical;
+  min-height: 5rem;
+  line-height: 1.55;
+}
+
+/* ── Map button ─────────────────────────────────────────────── */
+.co-map-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  padding: 0.875rem 1rem;
+  border: 1.5px dashed #d4d4da;
+  border-radius: 10px;
+  background: #fafafa;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.co-map-row:hover {
+  border-color: #d70018;
+  background: #fff8f8;
+}
+
+.co-map-info {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.co-map-icon-wrap {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 9px;
+  background: #fbe6e8;
+  color: #d70018;
+}
+
+.co-map-icon-wrap svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.co-map-text strong {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #111116;
+}
+
+.co-map-text span {
+  font-size: 0.78rem;
+  color: #74747c;
+}
+
+.co-map-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #d70018;
+  border-radius: 8px;
+  background: #d70018;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 140ms ease, box-shadow 140ms ease, transform 100ms ease;
+}
+
+.co-map-button:hover {
+  background: #b50015;
+  box-shadow: 0 6px 18px rgba(215, 0, 24, 0.22);
+}
+
+.co-map-button:active {
+  transform: translateY(1px);
+}
+
+.co-map-button svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+/* ── Google Map modal overlay ───────────────────────────────── */
+.co-map-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(10, 10, 18, 0.55);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.co-map-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.co-map-modal-box {
+  display: flex;
+  width: min(92vw, 780px);
+  flex-direction: column;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transform: translateY(12px) scale(0.98);
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease;
+  opacity: 0;
+}
+
+.co-map-modal.is-open .co-map-modal-box {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.co-map-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #ededf0;
+}
+
+.co-map-modal-header h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111116;
+}
+
+.co-map-close {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 8px;
+  color: #74747c;
+  transition: background 130ms ease, color 130ms ease;
+}
+
+.co-map-close:hover {
+  background: #f0f0f3;
+  color: #111116;
+}
+
+.co-map-close svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.co-map-embed {
+  width: 100%;
+  height: 420px;
+  border: 0;
+  display: block;
+  background: #e8eaf0;
+}
+
+.co-map-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #ededf0;
+}
+
+/* ── Payment methods ────────────────────────────────────────── */
+.co-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+.co-payment-option {
+  position: relative;
+}
+
+.co-payment-option input[type="radio"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+  margin: 0;
+}
+
+.co-payment-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 0.625rem;
+  border: 1.5px solid #d8d8de;
+  border-radius: 12px;
+  background: #fafafa;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+  user-select: none;
+}
+
+.co-payment-option input:checked + .co-payment-label {
+  border-color: #d70018;
+  background: #fff8f8;
+  box-shadow: 0 0 0 2px rgba(215, 0, 24, 0.12);
+}
+
+.co-payment-option input:focus-visible + .co-payment-label {
+  outline: 2px solid #d70018;
+  outline-offset: 2px;
+}
+
+.co-payment-label:hover {
+  border-color: #c0c0ca;
+  background: #ffffff;
+}
+
+.co-payment-icon {
+  display: flex;
+  width: 2.75rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.co-payment-icon img {
+  max-width: 2.75rem;
+  max-height: 2rem;
+  object-fit: contain;
+}
+
+.co-payment-icon svg {
+  width: 2rem;
+  height: 2rem;
+  color: #d70018;
+}
+
+.co-payment-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #242428;
+  line-height: 1.25;
+}
+
+.co-payment-sub {
+  font-size: 0.7rem;
+  color: #74747c;
+  line-height: 1.3;
+}
+
+.co-payment-option input:checked ~ .co-payment-label .co-payment-name {
+  color: #d70018;
+}
+
+/* ── COD info block (shown when COD is selected) ────────────── */
+.co-cod-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-top: 0.875rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: #fffbea;
+  border: 1px solid #f0e070;
+  font-size: 0.82rem;
+  color: #6b5c00;
+  line-height: 1.5;
+}
+
+.co-cod-info svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #b99500;
+}
+
+/* ── Order summary sidebar ──────────────────────────────────── */
+.checkout-summary {
+  position: sticky;
+  top: calc(var(--header-height, 4rem) + 1.25rem);
+}
+
+.co-summary-card {
+  padding: 1.5rem;
+}
+
+.co-summary-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #111116;
+  margin-bottom: 1.25rem;
+}
+
+/* order items in sidebar */
+.co-order-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding-bottom: 1.125rem;
+  border-bottom: 1px solid #ededf0;
+  margin-bottom: 1.125rem;
+}
+
+.co-order-item {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.co-order-thumb {
+  position: relative;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 8px;
+  border: 1px solid #d8dce5;
+  background: #ffffff;
+  overflow: visible;
+}
+
+.co-order-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+  border-radius: 7px;
+}
+
+.co-order-qty-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  width: 1.2rem;
+  height: 1.2rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #d70018;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  border: 2px solid #ffffff;
+}
+
+.co-order-info {
+  min-width: 0;
+}
+
+.co-order-name {
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: #111116;
+  line-height: 1.35;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.co-order-variant {
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  color: #74747c;
+}
+
+.co-order-qty-text {
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  color: #74747c;
+}
+
+.co-order-qty-text strong {
+  color: #242428;
+  font-weight: 700;
+}
+
+.co-order-price {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #d70018;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* price breakdown */
+.co-price-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #ededf0;
+  margin-bottom: 1rem;
+}
+
+.co-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.co-price-row dt {
+  color: #696971;
+}
+
+.co-price-row dd {
+  font-weight: 650;
+  color: #242428;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.co-price-row.is-discount dt,
+.co-price-row.is-discount dd {
+  color: #16a34a;
+}
+
+.co-price-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.co-price-total .label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111116;
+}
+
+.co-price-total .amount {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #d70018;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* submit button */
+.co-submit-btn {
+  display: flex;
+  width: 100%;
+  min-height: 3.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 12px;
+  background: #d70018;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: background 160ms ease, transform 120ms ease;
+}
+
+.co-submit-btn:hover {
+  background: #b50015;
+}
+
+.co-submit-btn:active {
+  transform: translateY(1px);
+}
+
+.co-submit-btn svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* security note */
+.co-security-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.875rem;
+  color: #85858d;
+  font-size: 0.72rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.co-security-note svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: 0 0 auto;
+  color: #22c55e;
+}
+
+/* ── Validation summary ─────────────────────────────────────── */
+.co-validation-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.875rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #f5b8be;
+  background: #fff5f6;
+  color: #b50015;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.co-validation-summary svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+/* ── Focus & accessibility ──────────────────────────────────── */
+.checkout-page button:focus-visible,
+.checkout-page a:focus-visible {
+  outline: 2px solid #d70018;
+  outline-offset: 3px;
+}
+
+/* ── Responsive: tablet (≤1100px) ──────────────────────────── */
+@media (max-width: 1100px) {
+  .checkout-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+  }
+
+  .co-payment-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ── Responsive: stack (≤860px) ────────────────────────────── */
+@media (max-width: 860px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .checkout-summary {
+    position: static;
+    order: -1; /* summary appears above form on mobile */
+  }
+
+  .co-payment-grid {
+    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  }
+}
+
+/* ── Responsive: small mobile (≤639px) ─────────────────────── */
+@media (max-width: 639px) {
+  .checkout-page {
+    padding-block: 1rem 4rem;
+  }
+
+  .co-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .co-form-grid .col-span-2 {
+    grid-column: span 1;
+  }
+
+  .co-map-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .co-map-button {
+    align-self: flex-end;
+  }
+
+  .co-map-embed {
+    height: 300px;
+  }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .checkout-page *,
+  .checkout-page *::before,
+  .checkout-page *::after,
+  .co-map-modal,
+  .co-map-modal-box {
+    transition: none !important;
+  }
+}

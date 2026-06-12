@@ -1,1 +1,674 @@
+@model ProductDetailViewModel
 
+@{
+    ViewData["Title"] = Model.Name;
+    ViewData["MetaDescription"] = $"{Model.Name} chính hãng, đủ màu, nhiều phiên bản bộ nhớ, giao nhanh từ 2 giờ tại TechStore.";
+    var selectedColor = Model.ColorOptions.FirstOrDefault(color => color.IsActive) ?? Model.ColorOptions.First();
+    var hasExtraVersions = Model.StorageOptions.Any(storage => storage.IsInitiallyHidden);
+    var isExtraVersionActive = Model.StorageOptions.Any(storage => storage.IsInitiallyHidden && storage.IsActive);
+    var previewSpecRows = Model.TechnicalSpecSections.SelectMany(section => section.Rows).Take(16).ToList();
+    const int visibleReviewLimit = 2;
+    var hasMoreReviews = Model.ReviewSummary.Reviews.Count > visibleReviewLimit;
+    var hasMoreQuestions = Model.QuestionAnswerSection.Threads.Count > Model.QuestionAnswerSection.VisibleThreadLimit;
+    var productUrl = Url.Action("Details", "Product", new { slug = Model.Slug }) ?? $"/product/{Model.Slug}";
+    var selectedColorPrice = selectedColor.Price.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/product-details.css" asp-append-version="true" />
+}
+
+<section class="product-detail-page" data-product-detail>
+    @Html.AntiForgeryToken()
+    <div class="container product-detail-container">
+        <nav class="pd-breadcrumb" aria-label="Đường dẫn">
+            <ol>
+                @for (var index = 0; index < Model.Breadcrumbs.Count; index++)
+                {
+                    var item = Model.Breadcrumbs[index];
+                    var isFirst = index == 0;
+                    var isLast = index == Model.Breadcrumbs.Count - 1;
+
+                    <li>
+                        @if (!isLast && item.Url is not null)
+                        {
+                            <a href="@item.Url">
+                                @if (isFirst)
+                                {
+                                    <svg aria-hidden="true"><use href="#hero-icon-home"></use></svg>
+                                }
+                                <span>@item.Label</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <span>@item.Label</span>
+                        }
+                    </li>
+                }
+            </ol>
+        </nav>
+
+        <div class="pd-layout">
+            <div class="pd-media-column">
+                <header class="pd-header">
+                    <h1>@Model.Name</h1>
+
+                    <div class="pd-header-meta">
+                        <div class="pd-rating" aria-label="@Model.RatingLabel sao từ @Model.ReviewCount đánh giá">
+                            <svg aria-hidden="true"><use href="#product-card-icon-star"></use></svg>
+                            <strong>@Model.RatingLabel</strong>
+                            <span>(@Model.ReviewCount đánh giá)</span>
+                        </div>
+
+                        <nav class="pd-quick-links" aria-label="Liên kết nhanh">
+                            @foreach (var link in Model.QuickLinks)
+                            {
+                                if (link.IconId == "hero-icon-phone")
+                                {
+                                    <button type="button" data-spec-open>
+                                        <svg aria-hidden="true"><use href="#@link.IconId"></use></svg>
+                                        <span>@link.Label</span>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a href="@link.Url">
+                                        <svg aria-hidden="true"><use href="#@link.IconId"></use></svg>
+                                        <span>@link.Label</span>
+                                    </a>
+                                }
+                            }
+                        </nav>
+                    </div>
+                </header>
+
+                <section class="pd-gallery" aria-label="Hình ảnh sản phẩm">
+                    <div class="pd-main-media">
+                        <button class="pd-gallery-arrow pd-gallery-arrow--prev" type="button" data-gallery-prev aria-label="Ảnh trước">
+                            <svg aria-hidden="true"><use href="#hero-icon-chevron-left"></use></svg>
+                        </button>
+
+                        <img src="@Model.MainImageUrl"
+                             alt="@Model.MainImageAlt"
+                             width="520"
+                             height="520"
+                             data-product-main-image />
+
+                        <button class="pd-gallery-arrow pd-gallery-arrow--next" type="button" data-gallery-next aria-label="Ảnh sau">
+                            <svg aria-hidden="true"><use href="#hero-icon-chevron"></use></svg>
+                        </button>
+                    </div>
+
+                    <div class="pd-thumb-strip" aria-label="Danh sách ảnh">
+                        @for (var index = 0; index < Model.GalleryItems.Count; index++)
+                        {
+                            var item = Model.GalleryItems[index];
+                            var activeClass = index == 0 ? "is-active" : null;
+
+                            <button class="pd-thumb @activeClass"
+                                    type="button"
+                                    data-gallery-thumb
+                                    data-gallery-index="@index"
+                                    data-image="@item.ImageUrl"
+                                    data-alt="@item.ImageAlt"
+                                    aria-pressed="@(index == 0 ? "true" : "false")"
+                                    aria-label="Xem @item.Label">
+                                @if (item.IsFeatureHighlight)
+                                {
+                                    <svg aria-hidden="true"><use href="#product-card-icon-star"></use></svg>
+                                    <span>Tính năng nổi bật</span>
+                                }
+                                else
+                                {
+                                    <img src="@item.ImageUrl"
+                                         alt=""
+                                         width="64"
+                                         height="64"
+                                         loading="lazy" />
+                                }
+                            </button>
+                        }
+                    </div>
+                </section>
+            </div>
+
+            <aside class="pd-purchase-column" aria-label="Tùy chọn mua hàng">
+                <section class="pd-option-block" aria-labelledby="pd-storage-title">
+                    <h2 id="pd-storage-title">Phiên bản</h2>
+
+                    <div class="pd-storage-options">
+                        @foreach (var storage in Model.StorageOptions)
+                        {
+                            <a class="pd-storage-option @(storage.IsActive ? "is-active" : null)"
+                               href="@storage.Url"
+                               aria-current="@(storage.IsActive ? "true" : null)"
+                               data-extra-version="@storage.IsInitiallyHidden.ToString().ToLowerInvariant()"
+                               @(storage.IsInitiallyHidden && !isExtraVersionActive ? "hidden" : null)>
+                                <span>@storage.Label</span>
+                            </a>
+                        }
+
+                        @if (hasExtraVersions)
+                        {
+                            <button class="pd-storage-more @(isExtraVersionActive ? "is-expanded" : null)"
+                                    type="button"
+                                    data-version-toggle
+                                    aria-expanded="@(isExtraVersionActive ? "true" : "false")">
+                                <span data-version-toggle-text>@(isExtraVersionActive ? "Thu gọn phiên bản" : "Xem thêm phiên bản khác")</span>
+                                <svg aria-hidden="true"><use href="#hero-icon-chevron"></use></svg>
+                            </button>
+                        }
+                    </div>
+                </section>
+
+                <section class="pd-option-block" aria-labelledby="pd-color-title">
+                    <h2 id="pd-color-title">Màu sắc</h2>
+
+                    <div class="pd-color-options">
+                        @foreach (var color in Model.ColorOptions)
+                        {
+                            <button class="pd-color-option @(color.IsActive ? "is-active" : null)"
+                                    type="button"
+                                    data-color-option
+                                    data-color-name="@color.Name"
+                                    data-image="@color.ImageUrl"
+                                    data-alt="@color.ImageAlt"
+                                    data-price="@color.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                    data-price-text="@ProductDetailViewModel.FormatPrice(color.Price)"
+                                    aria-pressed="@(color.IsActive ? "true" : "false")">
+                                <img src="@color.ImageUrl"
+                                     alt=""
+                                     width="44"
+                                     height="44"
+                                     loading="lazy" />
+                                <span>
+                                    <strong>@color.Name</strong>
+                                    <small>@ProductDetailViewModel.FormatPrice(color.Price)</small>
+                                </span>
+                            </button>
+                        }
+                    </div>
+                </section>
+
+                <div class="pd-cta-row">
+                    <a class="pd-buy-now"
+                       asp-controller="Checkout"
+                       asp-action="Index"
+                       data-buy-now
+                       data-cart-id="@Model.Slug"
+                       data-cart-name="@Model.Name"
+                       data-cart-url="@productUrl"
+                       data-cart-image="@selectedColor.ImageUrl"
+                       data-cart-alt="@selectedColor.ImageAlt"
+                       data-cart-variant="@selectedColor.Name"
+                       data-cart-price="@selectedColorPrice">
+                        <strong>MUA NGAY</strong>
+                        <span>Giao nhanh từ 2 giờ hoặc nhận tại cửa hàng</span>
+                    </a>
+
+                    <button class="pd-add-cart"
+                            type="button"
+                            data-add-to-cart
+                            data-cart-id="@Model.Slug"
+                            data-cart-name="@Model.Name"
+                            data-cart-url="@productUrl"
+                            data-cart-image="@selectedColor.ImageUrl"
+                            data-cart-alt="@selectedColor.ImageAlt"
+                            data-cart-variant="@selectedColor.Name"
+                            data-cart-price="@selectedColorPrice">
+                        <svg aria-hidden="true"><use href="#hero-icon-cart"></use></svg>
+                        <span>Thêm vào giỏ</span>
+                    </button>
+                </div>
+
+                <span class="pd-sticky-sentinel" data-sticky-sentinel aria-hidden="true"></span>
+            </aside>
+        </div>
+    </div>
+
+    <div class="container product-detail-container">
+        <section id="thong-so-ky-thuat" class="pd-section pd-technical-section" aria-labelledby="pd-technical-title">
+            <div class="pd-section-head">
+                <h2 id="pd-technical-title">Thông số kỹ thuật</h2>
+                <button type="button" data-spec-open>
+                    <span>Xem tất cả</span>
+                    <svg aria-hidden="true"><use href="#hero-icon-chevron"></use></svg>
+                </button>
+            </div>
+
+            <table class="technical-content">
+                <tbody>
+                    @foreach (var row in previewSpecRows)
+                    {
+                        <tr>
+                            <td>@row.Label</td>
+                            <td class="@(row.IsHighlighted ? "is-highlighted" : null)">@row.Value</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </section>
+
+        <section id="block-same-product" class="pd-section pd-related-section" aria-labelledby="pd-related-title">
+            <div class="same-product-head">
+                <h2 id="pd-related-title" class="same-product-title">Có thể bạn cũng thích</h2>
+            </div>
+
+            <div class="same-product-options-list" role="tablist" aria-label="Nhóm sản phẩm gợi ý">
+                @foreach (var group in Model.RelatedProductGroups)
+                {
+                    <button class="pd-related-tab @(group.IsActive ? "is-active" : null)"
+                            type="button"
+                            role="tab"
+                            data-related-tab="@group.Id"
+                            aria-selected="@(group.IsActive ? "true" : "false")">
+                        @group.Label
+                    </button>
+                }
+            </div>
+
+            <div class="product-list-swiper">
+                @foreach (var group in Model.RelatedProductGroups)
+                {
+                    <div class="pd-related-panel"
+                         role="tabpanel"
+                         data-related-panel="@group.Id"
+                         hidden="@(!group.IsActive)">
+                        <div class="pd-related-track">
+                            @foreach (var product in group.Products)
+                            {
+                                <article class="pd-related-card">
+                                    <div class="pd-related-badges">
+                                        @if (!string.IsNullOrWhiteSpace(product.DiscountLabel))
+                                        {
+                                            <span class="pd-related-discount">@product.DiscountLabel</span>
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(product.InstallmentLabel))
+                                        {
+                                            <span class="pd-related-installment">@product.InstallmentLabel</span>
+                                        }
+                                    </div>
+
+                                    <a class="pd-related-image" href="#">
+                                        <img src="@product.ImageUrl"
+                                             alt="@product.ImageAlt"
+                                             width="176"
+                                             height="176"
+                                             loading="lazy" />
+                                    </a>
+
+                                    <h3><a href="#">@product.Name</a></h3>
+
+                                    <div class="pd-related-price">
+                                        <strong>@ProductDetailViewModel.FormatPrice(product.CurrentPrice)</strong>
+                                        @if (product.OldPrice.HasValue)
+                                        {
+                                            <del>@ProductDetailViewModel.FormatPrice(product.OldPrice.Value)</del>
+                                        }
+                                    </div>
+
+                                    @if (!string.IsNullOrWhiteSpace(product.GiftNote))
+                                    {
+                                        <p class="pd-related-note">@product.GiftNote</p>
+                                    }
+
+                                    @if (!string.IsNullOrWhiteSpace(product.UsedPriceLabel))
+                                    {
+                                        <p class="pd-used-price">@product.UsedPriceLabel</p>
+                                    }
+
+                                    @if (!string.IsNullOrWhiteSpace(product.SavingLabel))
+                                    {
+                                        <span class="pd-saving-label">@product.SavingLabel</span>
+                                    }
+
+                                    <div class="pd-related-meta">
+                                        @if (!string.IsNullOrWhiteSpace(product.DeliveryLabel))
+                                        {
+                                            <span class="pd-delivery-badge">
+                                                <svg aria-hidden="true"><use href="#hero-icon-truck"></use></svg>
+                                                @product.DeliveryLabel
+                                            </span>
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(product.Location))
+                                        {
+                                            <span class="pd-location">@product.Location</span>
+                                        }
+                                    </div>
+
+                                    <div class="pd-related-foot">
+                                        @if (product.Rating.HasValue)
+                                        {
+                                            <span class="pd-card-rating">
+                                                <svg aria-hidden="true"><use href="#product-card-icon-star"></use></svg>
+                                                @product.Rating.Value.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)
+                                            </span>
+                                        }
+
+                                        <button type="button">
+                                            <svg aria-hidden="true"><use href="#product-card-icon-heart"></use></svg>
+                                            Yêu thích
+                                        </button>
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="pd-section boxReview pd-review-section" aria-labelledby="pd-review-title">
+            <div class="boxReview-head">
+                <h2 id="pd-review-title">@Model.ReviewSummary.Title</h2>
+            </div>
+
+            <div class="boxReview-review">
+                <div class="boxReview-overview">
+                    <div class="pd-review-score">
+                        <strong>@Model.ReviewSummary.ScoreLabel</strong><span>/5</span>
+                    </div>
+                    <div class="pd-review-stars" aria-label="@Model.ReviewSummary.ScoreLabel sao">
+                        @for (var star = 0; star < 5; star++)
+                        {
+                            <svg aria-hidden="true"><use href="#product-card-icon-star"></use></svg>
+                        }
+                    </div>
+                    <p>@Model.ReviewSummary.TotalReviews lượt đánh giá</p>
+                    <button class="pd-review-write" type="button" data-review-open>Viết đánh giá</button>
+                </div>
+
+                <div class="boxReview-star">
+                    @foreach (var rating in Model.ReviewSummary.RatingBreakdown)
+                    {
+                        <div class="star-bar">
+                            <span>@rating.Stars <svg aria-hidden="true"><use href="#product-card-icon-star"></use></svg></span>
+                            <div class="progress" aria-hidden="true">
+                                <span class="progress-fill" style="--rating-percent: @rating.Percent;"></span>
+                            </div>
+                            <small>@rating.Count đánh giá</small>
+                        </div>
+                    }
+                </div>
+
+                <div class="box-experience-review">
+                    <h3>Đánh giá theo trải nghiệm</h3>
+                    @foreach (var experience in Model.ReviewSummary.ExperienceRatings)
+                    {
+                        <div class="pd-experience-row">
+                            <span>@experience.Label</span>
+                            <strong>
+                                @for (var star = 0; star < 5; star++)
+                                {
+                                    <svg aria-hidden="true"><use href="#product-card-icon-star"></use></svg>
+                                }
+                                @experience.ScoreLabel/5
+                                <small>(@experience.Count đánh giá)</small>
+                            </strong>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div id="review" class="pd-review-list">
+                <div class="pd-review-filters" aria-label="Lọc đánh giá">
+                    <strong>Lọc đánh giá theo</strong>
+                    <button class="is-active" type="button">Tất cả</button>
+                    <button type="button">Có hình ảnh</button>
+                    <button type="button">Đã mua hàng</button>
+                    <button type="button">5 sao</button>
+                    <button type="button">4 sao</button>
+                    <button type="button">3 sao</button>
+                    <button type="button">2 sao</button>
+                    <button type="button">1 sao</button>
+                </div>
+
+                @for (var reviewIndex = 0; reviewIndex < Model.ReviewSummary.Reviews.Count; reviewIndex++)
+                {
+                    var review = Model.ReviewSummary.Reviews[reviewIndex];
+
+                    <article class="pd-review-item"
+                             data-review-item
+                             @(reviewIndex >= visibleReviewLimit ? "hidden" : null)>
+                        <div class="pd-review-avatar" aria-hidden="true">@review.Initial</div>
+                        <div class="pd-review-body">
+                            <header>
+                                <strong>@review.Author</strong>
+                                <span class="pd-review-item-stars">
+                                    @for (var star = 0; star < 5; star++)
+                                    {
+                                        <svg aria-hidden="true"><use href="#product-card-icon-star"></use></svg>
+                                    }
+                                    <small>@review.RatingText</small>
+                                </span>
+                            </header>
+
+                            @if (review.Tags.Count > 0)
+                            {
+                                <div class="pd-review-tags">
+                                    @foreach (var tag in review.Tags)
+                                    {
+                                        <span>@tag</span>
+                                    }
+                                </div>
+                            }
+
+                            <p>@review.Content</p>
+                            <time>@review.TimeAgo</time>
+                        </div>
+                    </article>
+                }
+
+                @if (hasMoreReviews)
+                {
+                    <div class="pd-review-more">
+                        <button type="button" data-review-show-all>
+                            Xem tất cả đánh giá
+                            <svg aria-hidden="true"><use href="#hero-icon-chevron"></use></svg>
+                        </button>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section id="block-comment-cps" class="pd-section pd-qa-section" aria-labelledby="pd-qa-title">
+            <h2 id="pd-qa-title">@Model.QuestionAnswerSection.Title</h2>
+
+            <div class="comment-form">
+                <div class="pd-qa-mascot" aria-hidden="true">
+                    <img src="~/images/logo-techstore-icon.svg" alt="" width="70" height="74" />
+                </div>
+
+                <div class="pd-qa-form-body">
+                    <h3 class="comment-form-title">@Model.QuestionAnswerSection.FormTitle</h3>
+                    <p class="question-content">@Model.QuestionAnswerSection.Description</p>
+
+                    <div class="pd-qa-input-row">
+                        <textarea rows="1" placeholder="@Model.QuestionAnswerSection.Placeholder"></textarea>
+                        <button type="button">
+                            @Model.QuestionAnswerSection.SubmitLabel
+                            <svg aria-hidden="true"><use href="#hero-icon-chevron"></use></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block-comment__box-list-comment">
+                @for (var threadIndex = 0; threadIndex < Model.QuestionAnswerSection.Threads.Count; threadIndex++)
+                {
+                    var thread = Model.QuestionAnswerSection.Threads[threadIndex];
+
+                    <article class="pd-qa-thread"
+                             data-qa-thread
+                             @(threadIndex >= Model.QuestionAnswerSection.VisibleThreadLimit ? "hidden" : null)>
+                        <div class="pd-qa-avatar" aria-hidden="true">@thread.Initial</div>
+
+                        <div class="pd-qa-content">
+                            <header>
+                                <strong>@thread.Author</strong>
+                                <time>@thread.TimeAgo</time>
+                            </header>
+
+                            <p>@thread.Question</p>
+
+                            <button class="pd-qa-reply-link" type="button">Phản hồi</button>
+
+                            @foreach (var reply in thread.Replies)
+                            {
+                                <div class="pd-qa-admin-reply">
+                                    <div class="pd-qa-admin-avatar" aria-hidden="true">
+                                        <img src="~/images/logo-techstore-icon.svg" alt="" width="24" height="26" />
+                                    </div>
+                                    <div>
+                                        <header>
+                                            <strong>@reply.Author</strong>
+                                            <span>@reply.Badge</span>
+                                            <time>@reply.TimeAgo</time>
+                                        </header>
+                                        <p>@reply.Content</p>
+                                        <button class="pd-qa-reply-link" type="button">Phản hồi</button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </article>
+                }
+
+                @if (hasMoreQuestions)
+                {
+                    <div class="pd-qa-more">
+                        <button type="button" data-qa-show-more>
+                            Xem thêm @Model.QuestionAnswerSection.AdditionalCommentCount bình luận
+                            <svg aria-hidden="true"><use href="#hero-icon-chevron"></use></svg>
+                        </button>
+                    </div>
+                }
+            </div>
+        </section>
+    </div>
+
+    <div id="teleport-modal" class="pd-spec-modal" data-spec-modal hidden>
+        <aside class="teleport-modal_main end" role="dialog" aria-modal="true" aria-labelledby="pd-spec-modal-title">
+            <header class="pd-spec-modal-head">
+                <h2 id="pd-spec-modal-title">Thông số kĩ thuật</h2>
+                <button type="button" data-spec-close aria-label="Đóng bảng thông số">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </header>
+
+            <nav class="pd-spec-modal-tabs" aria-label="Nhóm thông số" data-spec-tabs>
+                @foreach (var specSection in Model.TechnicalSpecSections)
+                {
+                    <button class="@(specSection == Model.TechnicalSpecSections[0] ? "is-active" : null)"
+                            type="button"
+                            data-spec-tab
+                            data-target="spec-modal-@specSection.Id">
+                        @specSection.Title
+                    </button>
+                }
+            </nav>
+
+            <div class="teleport-modal_content" data-spec-modal-content>
+                @foreach (var specSection in Model.TechnicalSpecSections)
+                {
+                    <section class="pd-spec-modal-section"
+                             id="spec-modal-@specSection.Id"
+                             data-spec-section>
+                        <h3>@specSection.Title</h3>
+                        <table class="technical-content pd-spec-modal-table">
+                            <tbody>
+                                @foreach (var row in specSection.Rows)
+                                {
+                                    <tr>
+                                        <td class="@(row.IsHighlighted ? "is-highlighted" : null)">@row.Label</td>
+                                        <td>@row.Value</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </section>
+                }
+            </div>
+        </aside>
+    </div>
+
+    <div class="pd-review-modal" data-review-modal hidden>
+        <div class="pd-review-modal-card" role="dialog" aria-modal="true" aria-labelledby="pd-review-modal-title">
+            <header>
+                <h2 id="pd-review-modal-title">Viết đánh giá</h2>
+                <button type="button" data-review-close aria-label="Đóng đánh giá">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </header>
+
+            <div class="pd-review-modal-stars" aria-label="Chọn 5 sao">
+                @for (var star = 0; star < 5; star++)
+                {
+                    <button type="button">
+                        <svg aria-hidden="true"><use href="#product-card-icon-star"></use></svg>
+                    </button>
+                }
+            </div>
+
+            <textarea rows="5" placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm"></textarea>
+            <button class="pd-review-submit" type="button">Gửi đánh giá</button>
+        </div>
+    </div>
+
+    <div class="pd-sticky-order" data-sticky-order aria-hidden="true">
+        <div class="pd-sticky-product">
+            <img src="@selectedColor.ImageUrl"
+                 alt=""
+                 width="64"
+                 height="64"
+                 data-sticky-product-image />
+            <div>
+                <strong data-sticky-product-name data-base-name="@Model.Name">@Model.Name - @selectedColor.Name</strong>
+                <span data-sticky-product-price>@ProductDetailViewModel.FormatPrice(selectedColor.Price)</span>
+            </div>
+        </div>
+
+        <div class="pd-sticky-actions">
+            <div class="pd-sticky-price">
+                <strong data-sticky-price>@ProductDetailViewModel.FormatPrice(selectedColor.Price)</strong>
+                @if (Model.OldPrice.HasValue)
+                {
+                    <del>@ProductDetailViewModel.FormatPrice(Model.OldPrice.Value)</del>
+                }
+            </div>
+
+            <a class="pd-sticky-buy"
+               asp-controller="Checkout"
+               asp-action="Index"
+               data-buy-now
+               data-cart-id="@Model.Slug"
+               data-cart-name="@Model.Name"
+               data-cart-url="@productUrl"
+               data-cart-image="@selectedColor.ImageUrl"
+               data-cart-alt="@selectedColor.ImageAlt"
+               data-cart-variant="@selectedColor.Name"
+               data-cart-price="@selectedColorPrice">Mua Ngay</a>
+
+            <button class="pd-sticky-cart"
+                    type="button"
+                    data-add-to-cart
+                    data-cart-id="@Model.Slug"
+                    data-cart-name="@Model.Name"
+                    data-cart-url="@productUrl"
+                    data-cart-image="@selectedColor.ImageUrl"
+                    data-cart-alt="@selectedColor.ImageAlt"
+                    data-cart-variant="@selectedColor.Name"
+                    data-cart-price="@selectedColorPrice"
+                    aria-label="Thêm vào giỏ">
+                <svg aria-hidden="true"><use href="#hero-icon-cart"></use></svg>
+            </button>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/product-details.js" asp-append-version="true"></script>
+}

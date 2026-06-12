@@ -17,4 +17,6 @@ public sealed class SiteCategoryMenuItemViewModel
 public sealed class HeaderViewModel
 {
     public required SiteCategoryMenuViewModel CategoryMenu { get; init; }
+    public int CartItemCount { get; init; }
+    public bool IsLoggedIn { get; init; }
 }
