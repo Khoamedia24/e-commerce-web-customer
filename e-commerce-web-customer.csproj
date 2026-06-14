@@ -7,6 +7,9 @@
     <RootNamespace>e_commerce_web_customer</RootNamespace>
     <NpmExecutable Condition="'$(OS)' == 'Windows_NT'">npm.cmd</NpmExecutable>
     <NpmExecutable Condition="'$(OS)' != 'Windows_NT'">npm</NpmExecutable>
+    <FrontendBuildStampDir>$(BaseIntermediateOutputPath)frontend\</FrontendBuildStampDir>
+    <SwiperAssetsStamp>$(FrontendBuildStampDir)swiper-assets.stamp</SwiperAssetsStamp>
+    <TailwindCssStamp>$(FrontendBuildStampDir)tailwind-css.stamp</TailwindCssStamp>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,23 +27,60 @@
     <PackageReference Include="NuGet.Protocol" Version="6.13.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <TailwindBuildInput Include="package.json" />
+    <TailwindBuildInput Include="package-lock.json" />
+    <TailwindBuildInput Include="wwwroot/css/tailwind.source.css" />
+    <TailwindBuildInput Include="wwwroot/css/components/**/*.css" />
+    <TailwindBuildInput Include="Views/**/*.cshtml" />
+    <TailwindBuildInput Include="wwwroot/js/**/*.js" />
+  </ItemGroup>
+
   <Target Name="RestoreFrontendDependencies" Inputs="package-lock.json" Outputs="node_modules/.package-lock.json">
     <Message Importance="high" Text="Restoring frontend dependencies with npm ci..." />
     <Exec Command="$(NpmExecutable) ci" />
   </Target>
 
-  <Target Name="CopyVendorAssets" BeforeTargets="BuildTailwindCss" DependsOnTargets="RestoreFrontendDependencies">
+  <Target
+    Name="InvalidateVendorAssetsStampWhenOutputsMissing"
+    BeforeTargets="CopyVendorAssets"
+    Condition="!Exists('wwwroot/lib/swiper/swiper-bundle.min.css') Or !Exists('wwwroot/lib/swiper/swiper-bundle.min.js')">
+    <Delete Files="$(SwiperAssetsStamp)" />
+  </Target>
+
+  <Target
+    Name="CopyVendorAssets"
+    BeforeTargets="BuildTailwindCss"
+    DependsOnTargets="RestoreFrontendDependencies"
+    Inputs="node_modules/swiper/swiper-bundle.min.css;node_modules/swiper/swiper-bundle.min.js"
+    Outputs="$(SwiperAssetsStamp)">
     <ItemGroup>
       <SwiperCss Include="node_modules/swiper/swiper-bundle.min.css" />
       <SwiperJs Include="node_modules/swiper/swiper-bundle.min.js" />
     </ItemGroup>
+    <MakeDir Directories="$(FrontendBuildStampDir)" />
     <Message Importance="high" Text="Copying Swiper assets from node_modules..." />
     <Copy SourceFiles="@(SwiperCss)" DestinationFolder="wwwroot/lib/swiper" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(SwiperJs)" DestinationFolder="wwwroot/lib/swiper" SkipUnchangedFiles="true" />
+    <Touch Files="$(SwiperAssetsStamp)" AlwaysCreate="true" />
   </Target>
 
-  <Target Name="BuildTailwindCss" BeforeTargets="PrepareForBuild" DependsOnTargets="RestoreFrontendDependencies;CopyVendorAssets">
+  <Target
+    Name="InvalidateTailwindCssStampWhenOutputMissing"
+    BeforeTargets="BuildTailwindCss"
+    Condition="!Exists('wwwroot/css/tailwind.css')">
+    <Delete Files="$(TailwindCssStamp)" />
+  </Target>
+
+  <Target
+    Name="BuildTailwindCss"
+    BeforeTargets="PrepareForBuild"
+    DependsOnTargets="RestoreFrontendDependencies;CopyVendorAssets"
+    Inputs="@(TailwindBuildInput)"
+    Outputs="$(TailwindCssStamp)">
+    <MakeDir Directories="$(FrontendBuildStampDir)" />
     <Exec Command="$(NpmExecutable) run css:build" />
+    <Touch Files="$(TailwindCssStamp)" AlwaysCreate="true" />
   </Target>
 
 </Project>

@@ -579,7 +579,6 @@
 
 .catalog-product-grid {
   --product-card-height: 420px;
-  --product-card-media-height: 238px;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
@@ -956,8 +955,7 @@
 }
 
 .catalog-page--sectioned {
-  --section-card-height: 420px;
-  --section-card-media-height: 238px;
+  --product-card-height: 420px;
 }
 
 .catalog-sectioned-discovery {
@@ -1248,8 +1246,6 @@
 }
 
 .catalog-section-product-grid {
-  --product-card-height: var(--section-card-height);
-  --product-card-media-height: var(--section-card-media-height);
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
@@ -1257,7 +1253,7 @@
 
 .catalog-section-product-grid__item {
   min-width: 0;
-  height: var(--section-card-height);
+  height: var(--product-card-height);
 }
 
 .catalog-section-product-grid__item.is-revealed {
@@ -1548,60 +1544,18 @@
 
   .catalog-product-grid {
     --product-card-height: 420px;
-    --product-card-media-height: 190px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
   .catalog-section-product-grid {
     --product-card-height: 420px;
-    --product-card-media-height: 190px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
   .catalog-section-product-grid__item {
     height: var(--product-card-height);
-  }
-
-  .catalog-product-grid .product-card__price {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 1px;
-    white-space: normal;
-  }
-
-  .catalog-product-grid .product-card__price strong {
-    font-size: 14px;
-  }
-
-  .catalog-product-grid .product-card__wishlist span,
-  .catalog-product-grid .product-card__location {
-    display: none;
-  }
-
-  .catalog-product-grid .product-card__actions {
-    min-height: 38px;
-  }
-
-  .catalog-section-product-grid .product-card__price {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 1px;
-    white-space: normal;
-  }
-
-  .catalog-section-product-grid .product-card__price strong {
-    font-size: 14px;
-  }
-
-  .catalog-section-product-grid .product-card__wishlist span,
-  .catalog-section-product-grid .product-card__location {
-    display: none;
-  }
-
-  .catalog-section-product-grid .product-card__actions {
-    min-height: 38px;
   }
 
   .catalog-page .pd-qa-section {
