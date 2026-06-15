@@ -13,32 +13,31 @@
              aria-label="Gợi ý tìm kiếm"
              data-search-panel>
         <div class="site-search-state is-active" data-search-state="idle">
-            @if (Model.RecentSearches.Count > 0)
-            {
-                <section class="site-search-block" data-search-history-block>
-                    <header class="site-search-block-header">
-                        <h3 class="site-search-title">
-                            <span class="site-search-title-icon" aria-hidden="true">↺</span>
-                            Lịch sử tìm kiếm
-                        </h3>
-                        <button class="site-search-reset"
-                                type="button"
-                                data-search-clear-history>
-                            Xóa tất cả
-                        </button>
-                    </header>
+            <section class="site-search-block"
+                     data-search-history-block
+                     @(Model.RecentSearches.Count == 0 ? "hidden" : null)>
+                <header class="site-search-block-header">
+                    <h3 class="site-search-title">
+                        <span class="site-search-title-icon" aria-hidden="true">↺</span>
+                        Lịch sử tìm kiếm
+                    </h3>
+                    <button class="site-search-reset"
+                            type="button"
+                            data-search-clear-history>
+                        Xóa tất cả
+                    </button>
+                </header>
 
-                    <div class="site-search-history-list">
-                        @foreach (var recentSearch in Model.RecentSearches)
-                        {
-                            <a class="site-search-history-link" href="@recentSearch.Url">
-                                <span class="site-search-history-icon" aria-hidden="true">↺</span>
-                                <span>@recentSearch.Label</span>
-                            </a>
-                        }
-                    </div>
-                </section>
-            }
+                <div class="site-search-history-list" data-search-history-list>
+                    @foreach (var recentSearch in Model.RecentSearches)
+                    {
+                        <a class="site-search-history-link" href="@recentSearch.Url">
+                            <span class="site-search-history-icon" aria-hidden="true">↺</span>
+                            <span>@recentSearch.Label</span>
+                        </a>
+                    }
+                </div>
+            </section>
 
             @if (Model.TrendingSearches.Count > 0)
             {

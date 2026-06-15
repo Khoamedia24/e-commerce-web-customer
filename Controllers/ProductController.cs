@@ -16,10 +16,12 @@ public sealed class ProductController : Controller
     [HttpGet("{slug}")]
     public async Task<IActionResult> Details(
         string slug,
+        [FromQuery] string? variant,
         CancellationToken cancellationToken)
     {
         var viewModel = await _productDetailViewModelFactory.CreateAsync(
             slug,
+            variant,
             cancellationToken);
 
         if (viewModel is null)

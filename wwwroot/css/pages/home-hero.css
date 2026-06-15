@@ -66,6 +66,10 @@
     color var(--transition-fast);
 }
 
+.hero-cat-item--split {
+  cursor: default;
+}
+
 .hero-cat-item:hover,
 .hero-cat-item:focus-visible,
 .hero-cat-entry.is-active .hero-cat-item {
@@ -105,14 +109,26 @@
   transition: color var(--transition-fast);
 }
 
+.hero-cat-label-link {
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
 .hero-cat-label-part + .hero-cat-label-part::before {
   color: #27272a;
   content: ",\00a0";
 }
 
 .hero-cat-label-part:hover,
+.hero-cat-label-link:focus-visible,
 .hero-cat-item:focus-visible .hero-cat-label-part:first-child {
   color: var(--primary-600);
+}
+
+.hero-cat-label-link:focus-visible {
+  outline: 2px solid var(--primary-300);
+  outline-offset: 1px;
 }
 
 .hero-cat-arrow {

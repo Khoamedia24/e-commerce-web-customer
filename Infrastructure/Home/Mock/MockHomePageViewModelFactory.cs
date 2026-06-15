@@ -1,5 +1,6 @@
 using e_commerce_web_customer.Application.Home;
 using e_commerce_web_customer.Application.Navigation;
+using e_commerce_web_customer.Infrastructure.Home.Content;
 using e_commerce_web_customer.ViewModels.Home;
 
 namespace e_commerce_web_customer.Infrastructure.Home.Mock;

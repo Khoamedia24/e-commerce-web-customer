@@ -6,5 +6,6 @@ public interface IProductDetailViewModelFactory
 {
     Task<ProductDetailViewModel?> CreateAsync(
         string slug,
+        string? variantKey = null,
         CancellationToken cancellationToken = default);
 }

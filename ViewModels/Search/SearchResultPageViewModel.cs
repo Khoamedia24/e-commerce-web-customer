@@ -11,6 +11,7 @@ public sealed class SearchResultPageViewModel
     public required IReadOnlyList<SearchResultSortOptionViewModel> SortOptions { get; init; }
     public required IReadOnlyList<ProductCardViewModel> Products { get; init; }
 
+    public bool HasQuery => !string.IsNullOrWhiteSpace(Query);
     public bool HasProducts => Products.Count > 0;
     public int VisibleProductCount => Math.Min(InitialProductCount, Products.Count);
     public int RemainingProductCount => Math.Max(0, Products.Count - VisibleProductCount);

@@ -12,4 +12,10 @@ public sealed record ProductReadModel(
     decimal? StudentPrice,
     string? PromotionNote,
     string SearchText,
-    IReadOnlyList<string>? Aliases = null);
+    IReadOnlyList<string>? Aliases = null,
+    string? CategorySlug = null,
+    string? CategoryName = null,
+    string? AvailabilityLabel = null,
+    decimal? Rating = null,
+    IReadOnlyList<string>? Specifications = null,
+    int PopularityScore = 0);

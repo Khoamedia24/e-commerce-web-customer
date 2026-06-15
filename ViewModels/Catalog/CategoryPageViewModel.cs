@@ -52,6 +52,8 @@ public sealed class CategoryBrandViewModel
     public required string Id { get; init; }
     public required string Label { get; init; }
     public required string Url { get; init; }
+    public string? ImageUrl { get; init; }
+    public string? ImageAlt { get; init; }
 }
 
 public sealed class CategoryQuickLinkViewModel
@@ -74,7 +76,13 @@ public sealed class CategoryFilterViewModel
     public required string Title { get; init; }
     public required IReadOnlyList<CategoryFilterItemViewModel> PrimaryItems { get; init; }
     public required IReadOnlyList<CategoryFilterItemViewModel> SecondaryItems { get; init; }
+    public IReadOnlyList<CategoryFilterGroupViewModel> Groups { get; init; } = [];
     public required IReadOnlyList<CategorySortOptionViewModel> SortOptions { get; init; }
+    public string CategorySlug { get; init; } = string.Empty;
+    public string? Brand { get; init; }
+    public string? Sort { get; init; }
+    public int ActiveSelectionCount { get; init; }
+    public int ResultCount { get; init; }
 }
 
 public sealed class CategoryFilterItemViewModel
@@ -84,6 +92,24 @@ public sealed class CategoryFilterItemViewModel
     public string? Icon { get; init; }
     public bool HasDropdown { get; init; }
     public bool IsEmphasized { get; init; }
+    public bool IsActive { get; init; }
+}
+
+public sealed class CategoryFilterGroupViewModel
+{
+    public required string Key { get; init; }
+    public required string Label { get; init; }
+    public string? Icon { get; init; }
+    public required IReadOnlyList<CategoryFilterOptionViewModel> Options { get; init; }
+    public int SelectedCount { get; init; }
+}
+
+public sealed class CategoryFilterOptionViewModel
+{
+    public required string Value { get; init; }
+    public required string Label { get; init; }
+    public bool IsSelected { get; init; }
+    public bool IsAvailable { get; init; }
 }
 
 public sealed class CategorySortOptionViewModel

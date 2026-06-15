@@ -19,11 +19,17 @@ public sealed class MockSearchResultProvider(
             ? DefaultQuery
             : request.Query.Trim();
         var sort = NormalizeSort(request.Sort);
-        var products = await productCatalog.SearchAsync(query, cancellationToken);
+        var products = await productCatalog.SearchAsync(
+            new ProductCatalogSearchRequest(
+                query,
+                Scope: ProductCatalogSearchScope.Variants),
+            cancellationToken);
         if (products.Count == 0 && IsSamsungQuery(query))
         {
             products = await productCatalog.SearchAsync(
-                DefaultQuery,
+                new ProductCatalogSearchRequest(
+                    DefaultQuery,
+                    Scope: ProductCatalogSearchScope.Variants),
                 cancellationToken);
         }
 

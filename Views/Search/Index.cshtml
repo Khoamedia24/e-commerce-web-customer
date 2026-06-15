@@ -1,8 +1,12 @@
 @model SearchResultPageViewModel
 
 @{
-    ViewData["Title"] = $"Kết quả tìm kiếm cho {Model.Query}";
-    ViewData["MetaDescription"] = $"Tìm kiếm {Model.Query} tại TechStore: sản phẩm Samsung, ưu đãi, trả góp và giao nhanh.";
+    ViewData["Title"] = Model.HasQuery
+        ? $"Kết quả tìm kiếm cho {Model.Query}"
+        : "Tìm kiếm sản phẩm";
+    ViewData["MetaDescription"] = Model.HasQuery
+        ? $"Tìm kiếm {Model.Query} tại TechStore."
+        : "Tìm kiếm sản phẩm chính hãng tại TechStore.";
 }
 
 <div class="search-result-page" data-search-result-page>
@@ -17,11 +21,22 @@
                 <span>Trang chủ</span>
             </a>
             <span aria-hidden="true">/</span>
-            <span>Kết quả tìm kiếm cho: '@Model.Query'</span>
+            <span>
+                @(Model.HasQuery
+                    ? $"Kết quả tìm kiếm cho: '{Model.Query}'"
+                    : "Tìm kiếm sản phẩm")
+            </span>
         </nav>
 
         <p class="search-result-summary">
-            Tìm thấy <strong>@Model.TotalCount</strong> sản phẩm cho từ khoá '<strong>@Model.Query</strong>'
+            @if (Model.HasQuery)
+            {
+                <text>Tìm thấy <strong>@Model.TotalCount</strong> sản phẩm cho từ khóa '<strong>@Model.Query</strong>'</text>
+            }
+            else
+            {
+                <text>Đang hiển thị <strong>@Model.TotalCount</strong> sản phẩm</text>
+            }
         </p>
 
         <div class="search-categories-list" aria-label="Danh mục liên quan">
@@ -89,7 +104,7 @@
                     <div class="search-result-empty">
                         <h2>Không có sản phẩm phù hợp</h2>
                         <p>Thử tìm bằng từ khóa ngắn hơn hoặc chọn một danh mục liên quan.</p>
-                        <a class="btn btn-primary" href="/search?q=samsung">Xem kết quả Samsung</a>
+                        <a class="btn btn-primary" href="/catalog?cat=dien-thoai">Xem danh mục điện thoại</a>
                     </div>
                 }
             </section>

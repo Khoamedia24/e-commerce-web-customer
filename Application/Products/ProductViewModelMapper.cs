@@ -29,9 +29,11 @@ public static class ProductViewModelMapper
                 ? $"Giá S-Student {FormatPrice(product.StudentPrice.Value)}"
                 : null,
             PromotionNote = product.PromotionNote,
+            AvailabilityLabel = product.AvailabilityLabel,
+            Specifications = product.Specifications ?? [],
             DeliveryLabel = "Giao 2 giờ",
             Location = "Hồ Chí Minh",
-            Rating = 5.0m
+            Rating = product.Rating
         };
     }
 

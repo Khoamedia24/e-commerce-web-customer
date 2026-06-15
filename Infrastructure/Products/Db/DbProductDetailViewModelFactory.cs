@@ -9,10 +9,12 @@ public sealed class DbProductDetailViewModelFactory(
 {
     public Task<ProductDetailViewModel?> CreateAsync(
         string slug,
+        string? variantKey = null,
         CancellationToken cancellationToken = default)
     {
         return productDetailDataService.CreateProductDetailAsync(
             slug,
+            variantKey,
             cancellationToken);
     }
 }

@@ -12,9 +12,22 @@ public sealed class DbSearchResultDataService(IProductCatalog productCatalog)
         SearchResultRequest request,
         CancellationToken cancellationToken = default)
     {
-        var query = request.Query?.Trim() ?? string.Empty;
+        var query = SearchTextNormalizer.CleanQuery(request.Query);
         var sort = NormalizeSort(request.Sort);
-        var products = await productCatalog.SearchAsync(query, cancellationToken);
+        var category = request.Category?.Trim();
+        var allProducts = await productCatalog.SearchAsync(
+            new ProductCatalogSearchRequest(
+                query,
+                Scope: ProductCatalogSearchScope.Variants),
+            cancellationToken);
+        var products = string.IsNullOrWhiteSpace(category)
+            ? allProducts
+            : allProducts
+                .Where(product => string.Equals(
+                    product.CategorySlug,
+                    category,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
         products = sort switch
         {
@@ -28,40 +41,88 @@ public sealed class DbSearchResultDataService(IProductCatalog productCatalog)
             Query = query,
             TotalCount = products.Count,
             InitialProductCount = 25,
-            Categories =
-            [
-                new()
+            Categories = new[]
                 {
-                    Label = "Tat ca",
-                    Url = $"/search?q={Uri.EscapeDataString(query)}",
-                    IsActive = true
+                    new SearchResultCategoryViewModel
+                    {
+                        Label = $"Tất cả ({allProducts.Count})",
+                        Url = BuildSearchUrl(query, sort),
+                        IsActive = string.IsNullOrWhiteSpace(category)
+                    }
                 }
-            ],
+                .Concat(allProducts
+                    .Where(product => !string.IsNullOrWhiteSpace(product.CategoryName)
+                        && !string.IsNullOrWhiteSpace(product.CategorySlug))
+                    .GroupBy(
+                        product => new
+                        {
+                            Slug = product.CategorySlug!,
+                            Name = product.CategoryName!
+                        })
+                    .OrderByDescending(group => group.Count())
+                    .ThenBy(group => group.Key.Name)
+                    .Select(group => new SearchResultCategoryViewModel
+                    {
+                        Label = $"{group.Key.Name} ({group.Count()})",
+                        Url = BuildSearchUrl(query, sort, group.Key.Slug),
+                        IsActive = string.Equals(
+                            category,
+                            group.Key.Slug,
+                            StringComparison.OrdinalIgnoreCase)
+                    }))
+                .ToList(),
             SortOptions =
             [
-                CreateSortOption("Lien quan", "relevance", query, sort),
-                CreateSortOption("Gia cao", "price-desc", query, sort),
-                CreateSortOption("Gia thap", "price-asc", query, sort)
+                CreateSortOption("Liên quan", "relevance", query, sort, category),
+                CreateSortOption("Giá cao", "price-desc", query, sort, category),
+                CreateSortOption("Giá thấp", "price-asc", query, sort, category)
             ],
             Products = products.Select(ProductViewModelMapper.ToProductCard).ToList()
         };
+    }
+
+    private static string BuildSearchUrl(
+        string query,
+        string? sort = null,
+        string? category = null)
+    {
+        var parameters = new List<string>
+        {
+            $"q={Uri.EscapeDataString(query)}"
+        };
+
+        if (!string.IsNullOrWhiteSpace(sort)
+            && !string.Equals(sort, "relevance", StringComparison.OrdinalIgnoreCase))
+        {
+            parameters.Add($"sort={Uri.EscapeDataString(sort)}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            parameters.Add($"category={Uri.EscapeDataString(category)}");
+        }
+
+        return $"/search?{string.Join('&', parameters)}";
     }
 
     private static SearchResultSortOptionViewModel CreateSortOption(
         string label,
         string value,
         string query,
-        string activeSort)
+        string activeSort,
+        string? category)
     {
-        var url = value == "relevance"
-            ? $"/search?q={Uri.EscapeDataString(query)}"
-            : $"/search?q={Uri.EscapeDataString(query)}&sort={value}";
-
         return new SearchResultSortOptionViewModel
         {
             Label = label,
             Value = value,
-            Url = url,
+            Url = BuildSearchUrl(query, value, category),
+            Icon = value switch
+            {
+                "price-desc" => "sort-desc",
+                "price-asc" => "sort-asc",
+                _ => "relevance"
+            },
             IsActive = value == activeSort
         };
     }

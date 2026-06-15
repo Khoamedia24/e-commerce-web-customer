@@ -12,6 +12,7 @@ public sealed class SiteCategoryMenuItemViewModel
     public required string Label { get; init; }
     public required string Icon { get; init; }
     public bool IsHighlighted { get; init; }
+    public IReadOnlyList<SiteCategoryMenuLinkViewModel> CategoryLinks { get; init; } = [];
     public IReadOnlyList<SiteCategoryMenuGroupViewModel> Groups { get; init; } = [];
 }
 

@@ -42,6 +42,16 @@
     return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
   }
 
+  async function redirectToLoginIfNeeded(response) {
+    if (response.status !== 401) return false;
+
+    const result = await response.json().catch(() => ({}));
+    const fallbackReturnUrl = `${window.location.pathname}${window.location.search}`;
+    window.location.href = result.redirectUrl
+      || `/Account/Login?returnUrl=${encodeURIComponent(fallbackReturnUrl)}`;
+    return true;
+  }
+
   function readCartItemPayload(item) {
     return {
       id: item.dataset.productId || '',
@@ -105,6 +115,7 @@
         body: JSON.stringify(collectCartItems()),
       });
 
+      if (await redirectToLoginIfNeeded(res)) return;
       if (!res.ok) return;
 
       const result = await res.json().catch(() => ({}));
@@ -286,6 +297,8 @@
           },
           body: JSON.stringify(selectedItems),
         });
+
+        if (await redirectToLoginIfNeeded(res)) return;
 
         if (!res.ok) {
           console.warn('Cart session save failed, navigating anyway.');

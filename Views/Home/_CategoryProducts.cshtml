@@ -88,61 +88,81 @@
                              aria-hidden="@(!isActive).ToString().ToLowerInvariant()"
                              hidden="@(!isActive)"
                              data-category-panel>
-                            <div class="category-quick-links" aria-label="Mua sắm theo nhu cầu">
-                                @foreach (var quickLink in panel.QuickLinks)
-                                {
-                                    <a class="category-quick-link" href="@quickLink.Url">
-                                        <img src="@quickLink.ImageUrl"
-                                             alt=""
-                                             width="56"
-                                             height="56"
-                                             loading="lazy" />
-                                        <span>@quickLink.Label</span>
-                                    </a>
-                                }
-                            </div>
-
-                            <div class="category-brand-row">
-                                <div class="category-brand-list" aria-label="Lọc theo thương hiệu">
-                                    @foreach (var brand in panel.Brands)
+                            @if (panel.QuickLinks.Count > 0)
+                            {
+                                <div class="category-quick-links" aria-label="Danh mục con">
+                                    @foreach (var quickLink in panel.QuickLinks)
                                     {
-                                        <a class="category-brand-chip" href="@brand.Url">@brand.Label</a>
+                                        <a class="category-quick-link" href="@quickLink.Url">
+                                            <img src="@quickLink.ImageUrl"
+                                                 alt=""
+                                                 width="56"
+                                                 height="56"
+                                                 loading="lazy" />
+                                            <span>@quickLink.Label</span>
+                                        </a>
                                     }
                                 </div>
+                            }
+
+                            <div class="category-brand-row">
+                                @if (panel.Brands.Count > 0)
+                                {
+                                    <div class="category-brand-list" aria-label="Lọc theo thương hiệu">
+                                        @foreach (var brand in panel.Brands)
+                                        {
+                                            <a class="category-brand-chip" href="@brand.Url">@brand.Label</a>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="category-brand-spacer" aria-hidden="true"></span>
+                                }
                                 <a class="category-view-all" href="@panel.ViewAllUrl">
                                     Xem tất cả
                                     <svg aria-hidden="true"><use href="#category-icon-chevron"></use></svg>
                                 </a>
                             </div>
 
-                            <div class="category-products-carousel">
-                                <div class="swiper category-products-swiper">
-                                    <div class="swiper-wrapper">
-                                        @foreach (var product in panel.Products)
-                                        {
-                                            <div class="swiper-slide">
-                                                <partial name="~/Views/Shared/Partials/_ProductCard.cshtml" model="product" />
-                                            </div>
-                                        }
+                            @if (panel.Products.Count > 0)
+                            {
+                                <div class="category-products-carousel">
+                                    <div class="swiper category-products-swiper">
+                                        <div class="swiper-wrapper">
+                                            @foreach (var product in panel.Products)
+                                            {
+                                                <div class="swiper-slide">
+                                                    <partial name="~/Views/Shared/Partials/_ProductCard.cshtml" model="product" />
+                                                </div>
+                                            }
+                                        </div>
                                     </div>
+
+                                    <button class="category-carousel-button category-carousel-button--prev"
+                                            type="button"
+                                            aria-label="Xem sản phẩm trước">
+                                        <svg aria-hidden="true"><use href="#category-icon-chevron-left"></use></svg>
+                                    </button>
+                                    <button class="category-carousel-button category-carousel-button--next"
+                                            type="button"
+                                            aria-label="Xem sản phẩm tiếp theo">
+                                        <svg aria-hidden="true"><use href="#category-icon-chevron"></use></svg>
+                                    </button>
                                 </div>
 
-                                <button class="category-carousel-button category-carousel-button--prev"
-                                        type="button"
-                                        aria-label="Xem sản phẩm trước">
-                                    <svg aria-hidden="true"><use href="#category-icon-chevron-left"></use></svg>
-                                </button>
-                                <button class="category-carousel-button category-carousel-button--next"
-                                        type="button"
-                                        aria-label="Xem sản phẩm tiếp theo">
-                                    <svg aria-hidden="true"><use href="#category-icon-chevron"></use></svg>
-                                </button>
-                            </div>
-
-                            @if (Model.ShowPagination)
+                                @if (Model.ShowPagination)
+                                {
+                                    <div class="category-products-pagination"
+                                         aria-label="Chọn trang sản phẩm"></div>
+                                }
+                            }
+                            else
                             {
-                                <div class="category-products-pagination"
-                                     aria-label="Chọn trang sản phẩm"></div>
+                                <div class="category-products-empty" role="status">
+                                    <h3>Chưa có sản phẩm</h3>
+                                    <p>Danh mục này sẽ được cập nhật khi có dữ liệu trong hệ thống.</p>
+                                </div>
                             }
                         </div>
                     }

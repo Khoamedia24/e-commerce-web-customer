@@ -6,6 +6,8 @@ namespace e_commerce_web_customer.ViewModels.Product;
 public sealed class ProductDetailViewModel
 {
     public required string Slug { get; init; }
+    public string CartItemId { get; init; } = string.Empty;
+    public string SelectedVariantLabel { get; init; } = string.Empty;
     public required string Name { get; init; }
     public required string Brand { get; init; }
     public required string MainImageUrl { get; init; }
@@ -63,6 +65,9 @@ public sealed class ProductDetailStorageOptionViewModel
 
 public sealed class ProductDetailColorOptionViewModel
 {
+    public string VariantKey { get; init; } = string.Empty;
+    public string DetailUrl { get; init; } = string.Empty;
+    public string VariantLabel { get; init; } = string.Empty;
     public required string Name { get; init; }
     public required string ImageUrl { get; init; }
     public required string ImageAlt { get; init; }

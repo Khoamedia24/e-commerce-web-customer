@@ -1,3 +1,4 @@
+using e_commerce_web_customer.Infrastructure.Home.Content;
 using e_commerce_web_customer.ViewModels.Home;
 using e_commerce_web_customer.ViewModels.Shared;
 

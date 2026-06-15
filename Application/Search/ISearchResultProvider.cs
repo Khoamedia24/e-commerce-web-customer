@@ -9,4 +9,7 @@ public interface ISearchResultProvider
         CancellationToken cancellationToken = default);
 }
 
-public sealed record SearchResultRequest(string? Query, string? Sort);
+public sealed record SearchResultRequest(
+    string? Query,
+    string? Sort,
+    string? Category = null);

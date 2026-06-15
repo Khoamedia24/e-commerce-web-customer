@@ -27,21 +27,6 @@ public sealed class MockSearchSuggestionProvider(
         new("Camera IP 360 độ 5MP IMOU", "/search?q=camera%20imou", "/images/categories/accessories/security-camera.webp", "Camera IMOU", "camera imou ip 360 5mp")
     ];
 
-    private static readonly IReadOnlyList<SearchQuickSeed> Suggestions =
-    [
-        new("Samsung S24 Ultra cũ", "/search?q=samsung%20s24%20ultra%20cu", "/images/products/phone/phone-violet-cutout.png", "Samsung S24 Ultra cũ", "samsung s24 ultra cu dien thoai"),
-        new("Samsung Galaxy S cũ", "/search?q=samsung%20galaxy%20s%20cu", "/images/products/phone/phone-camera-cutout.png", "Samsung Galaxy S cũ", "samsung galaxy s cu"),
-        new("Điện thoại Samsung Galaxy", "/search?q=dien%20thoai%20samsung%20galaxy", "/images/products/phone/phone-violet.webp", "Điện thoại Samsung Galaxy", "dien thoai samsung galaxy"),
-        new("điện thoại samsung cũ giá rẻ", "/search?q=dien%20thoai%20samsung%20cu%20gia%20re", "/images/products/phone/phone-camera.webp", "Điện thoại Samsung cũ", "samsung dien thoai cu gia re"),
-        new("Tivi Samsung", "/search?q=tivi%20samsung", "/images/home/hero-smartphones.webp", "Tivi Samsung", "samsung tivi tv"),
-        new("iPhone 17 Pro Max", "/search?q=iphone%2017%20pro%20max", "/images/products/phone/phone-orange-cutout.png", "iPhone 17 Pro Max", "iphone 17 pro max apple"),
-        new("iPhone 16 Pro Max", "/search?q=iphone%2016%20pro%20max", "/images/products/phone/phone-gaming-cutout.png", "iPhone 16 Pro Max", "iphone 16 pro max apple"),
-        new("MacBook Air M5", "/search?q=macbook%20air%20m5", "/images/products/computing/laptop-10.webp", "MacBook Air M5", "macbook air m5 apple laptop"),
-        new("Laptop gaming ASUS", "/search?q=laptop%20gaming%20asus", "/images/products/computing/laptop-04.webp", "Laptop gaming ASUS", "laptop gaming asus"),
-        new("Tai nghe Sony", "/search?q=tai%20nghe%20sony", "/images/products/audio-wearables/audio-01.webp", "Tai nghe Sony", "tai nghe sony am thanh"),
-        new("AirPods Pro", "/search?q=airpods%20pro", "/images/products/audio-wearables/audio-04.webp", "AirPods Pro", "airpods apple tai nghe")
-    ];
-
     public Task<HeaderSearchViewModel> GetInitialSuggestionsAsync(
         CancellationToken cancellationToken = default)
     {
@@ -59,7 +44,7 @@ public sealed class MockSearchSuggestionProvider(
         CancellationToken cancellationToken = default)
     {
         var normalizedQuery = SearchTextNormalizer.Normalize(query ?? string.Empty);
-        if (string.IsNullOrWhiteSpace(normalizedQuery))
+        if (normalizedQuery.Length < 2)
         {
             return new SearchSuggestionResultsViewModel
             {
@@ -67,16 +52,23 @@ public sealed class MockSearchSuggestionProvider(
             };
         }
 
-        var products = await productCatalog.SearchAsync(query, cancellationToken);
+        var products = await productCatalog.SearchAsync(
+            new ProductCatalogSearchRequest(query, 6),
+            cancellationToken);
 
         return new SearchSuggestionResultsViewModel
         {
             Query = query?.Trim() ?? string.Empty,
-            Suggestions = Suggestions
-                .Where(item => SearchTextNormalizer.Normalize(item.SearchText)
-                    .Contains(normalizedQuery, StringComparison.Ordinal))
-                .Take(6)
-                .Select(ToViewModel)
+            Suggestions = products
+                .DistinctBy(product => SearchTextNormalizer.Normalize(product.Name))
+                .Take(4)
+                .Select(product => new SearchQuickLinkViewModel
+                {
+                    Label = product.Name,
+                    Url = $"/search?q={Uri.EscapeDataString(product.Name)}",
+                    ImageUrl = product.ImageUrl,
+                    ImageAlt = product.ImageAlt
+                })
                 .ToList(),
             Products = products
                 .Take(6)

@@ -12,8 +12,11 @@
     <partial name="_CategoryProducts" model="categorySection" />
 }
 
-<partial name="~/Views/Shared/Sections/_CategoryDirectory.cshtml"
-         model="Model.AccessoryDirectory" />
+@if (Model.AccessoryDirectory.Items.Count > 0)
+{
+    <partial name="~/Views/Shared/Sections/_CategoryDirectory.cshtml"
+             model="Model.AccessoryDirectory" />
+}
 
 @foreach (var categorySection in Model.AdditionalCategorySections)
 {

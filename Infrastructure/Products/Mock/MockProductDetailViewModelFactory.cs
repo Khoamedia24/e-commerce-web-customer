@@ -21,8 +21,10 @@ public sealed class MockProductDetailViewModelFactory(
 
     public async Task<ProductDetailViewModel?> CreateAsync(
         string slug,
+        string? variantKey = null,
         CancellationToken cancellationToken = default)
     {
+        _ = variantKey;
         var normalizedSlug = slug.Trim().ToLowerInvariant();
 
         if (normalizedSlug.StartsWith("iphone-17-pro-max", StringComparison.Ordinal))

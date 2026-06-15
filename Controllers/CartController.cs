@@ -1,4 +1,5 @@
 using e_commerce_web_customer.Application.Contracts;
+using e_commerce_web_customer.Application.Constants;
 using e_commerce_web_customer.Application.Services;
 using e_commerce_web_customer.ViewModels.Cart;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ namespace e_commerce_web_customer.Controllers;
 public sealed class CartController(
     CartSessionService cartSession,
     ICartItemValidator cartItemValidator,
+    ICartPersistenceService cartPersistenceService,
     ICartDemoDataProvider demoDataProvider) : Controller
 {
     [HttpGet]
@@ -15,9 +17,33 @@ public sealed class CartController(
         bool demo = false,
         CancellationToken cancellationToken = default)
     {
-        var items = demo
-            ? await demoDataProvider.GetCartItemsAsync(cancellationToken)
-            : BuildCartItems(cartSession.Load());
+        IReadOnlyList<CartItemViewModel> items;
+        if (demo)
+        {
+            items = await demoDataProvider.GetCartItemsAsync(cancellationToken);
+        }
+        else
+        {
+            var sessionItems = cartSession.Load();
+            var userEmail = GetLoggedInUserEmail();
+
+            if (sessionItems.Count == 0 && userEmail is not null)
+            {
+                sessionItems = await cartPersistenceService.LoadAsync(
+                    userEmail,
+                    cancellationToken);
+                cartSession.Save(sessionItems);
+            }
+            else if (sessionItems.Count > 0 && userEmail is not null)
+            {
+                await cartPersistenceService.SaveAsync(
+                    userEmail,
+                    sessionItems,
+                    cancellationToken);
+            }
+
+            items = BuildCartItems(sessionItems);
+        }
 
         return View(new CartIndexViewModel
         {
@@ -31,6 +57,8 @@ public sealed class CartController(
         [FromBody] CartSessionItem? item,
         CancellationToken cancellationToken)
     {
+        var userEmail = GetLoggedInUserEmail();
+
         if (item is null)
         {
             return BadRequest(new { error = "Cart item is invalid." });
@@ -38,10 +66,20 @@ public sealed class CartController(
 
         try
         {
+            if (userEmail is not null)
+            {
+                await EnsureCartLoadedAsync(userEmail, cancellationToken);
+            }
+
             var validatedItem = await cartItemValidator.ValidateAsync(
                 item,
                 cancellationToken);
-            var items = cartSession.AddOrUpdate(validatedItem);
+            var updatedItems = cartSession.AddOrUpdate(validatedItem);
+            var items = await ValidateCartItemsAsync(
+                updatedItems,
+                cancellationToken);
+            cartSession.Save(items);
+            await PersistCartForLoggedInUserAsync(items, cancellationToken);
             return Ok(new { count = CountQuantity(items) });
         }
         catch (CartItemValidationException ex)
@@ -95,6 +133,7 @@ public sealed class CartController(
         if (items.Count == 0)
         {
             cartSession.Clear();
+            await ClearCartForLoggedInUserAsync(cancellationToken);
             return Ok(new { saved = 0, count = 0 });
         }
 
@@ -118,8 +157,11 @@ public sealed class CartController(
 
         if (savedItems.Count == 0)
         {
+            await ClearCartForLoggedInUserAsync(cancellationToken);
             return BadRequest(new { error = "Cart is empty or all items were invalid." });
         }
+
+        await PersistCartForLoggedInUserAsync(savedItems, cancellationToken);
 
         return Ok(new
         {
@@ -156,5 +198,84 @@ public sealed class CartController(
     private static int CountQuantity(IEnumerable<CartSessionItem> items)
     {
         return items.Sum(item => Math.Max(1, item.Quantity));
+    }
+
+    private async Task<IReadOnlyList<CartSessionItem>> ValidateCartItemsAsync(
+        IEnumerable<CartSessionItem> items,
+        CancellationToken cancellationToken)
+    {
+        var validatedItems = new List<CartSessionItem>();
+
+        foreach (var item in items)
+        {
+            try
+            {
+                validatedItems.Add(await cartItemValidator.ValidateAsync(
+                    item,
+                    cancellationToken));
+            }
+            catch (CartItemValidationException)
+            {
+                // Invalid variants are removed from the cart.
+            }
+        }
+
+        return validatedItems;
+    }
+
+    private async Task PersistCartForLoggedInUserAsync(
+        IReadOnlyCollection<CartSessionItem> items,
+        CancellationToken cancellationToken)
+    {
+        var userEmail = GetLoggedInUserEmail();
+        if (userEmail is null)
+        {
+            return;
+        }
+
+        await cartPersistenceService.SaveAsync(
+            userEmail,
+            items,
+            cancellationToken);
+    }
+
+    private async Task EnsureCartLoadedAsync(
+        string userEmail,
+        CancellationToken cancellationToken)
+    {
+        if (cartSession.Load().Count > 0)
+        {
+            return;
+        }
+
+        var persistedItems = await cartPersistenceService.LoadAsync(
+            userEmail,
+            cancellationToken);
+        cartSession.Save(persistedItems);
+    }
+
+    private async Task ClearCartForLoggedInUserAsync(
+        CancellationToken cancellationToken)
+    {
+        var userEmail = GetLoggedInUserEmail();
+        if (userEmail is null)
+        {
+            return;
+        }
+
+        await cartPersistenceService.ClearAsync(
+            userEmail,
+            cancellationToken);
+    }
+
+    private string? GetLoggedInUserEmail()
+    {
+        if (HttpContext.Session.GetString(SessionKeys.IsLoggedIn) != "true")
+        {
+            return null;
+        }
+
+        var email = HttpContext.Session.GetString(SessionKeys.UserEmail);
+        return string.IsNullOrWhiteSpace(email) ? null : email.Trim();
     }
 }

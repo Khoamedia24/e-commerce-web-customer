@@ -22,6 +22,8 @@ using e_commerce_web_customer.Infrastructure.Products.Db;
 using e_commerce_web_customer.Infrastructure.Products.Mock;
 using e_commerce_web_customer.Infrastructure.Search.Db;
 using e_commerce_web_customer.Infrastructure.Search.Mock;
+using e_commerce_web_customer.Models.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace e_commerce_web_customer.Infrastructure.DependencyInjection;
@@ -40,6 +42,7 @@ public static class StorefrontServiceCollectionExtensions
         services.AddSingleton<ISearchResultProvider, MockSearchResultProvider>();
         services.AddSingleton<IHeaderAccountProvider, MockHeaderAccountProvider>();
         services.AddSingleton<ICartDemoDataProvider, MockCartDemoDataProvider>();
+        services.AddSingleton<ICartPersistenceService, NoOpCartPersistenceService>();
         services.AddSingleton<IOrderService, MockOrderService>();
         services.AddScoped<IAccountService, MockAccountService>();
         services.AddScoped<ICartItemValidator, MockCartItemValidator>();
@@ -76,7 +79,9 @@ public static class StorefrontServiceCollectionExtensions
         services.AddScoped<ISearchResultProvider, DbSearchResultProvider>();
         services.AddScoped<IHeaderAccountProvider, DbHeaderAccountProvider>();
         services.AddScoped<ICartDemoDataProvider, EmptyCartDemoDataProvider>();
+        services.AddScoped<ICartPersistenceService, DbCartPersistenceService>();
         services.AddScoped<IOrderService, DbOrderService>();
+        services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddScoped<IAccountService, DbAccountService>();
         services.AddScoped<ICartItemValidator, DbCartItemValidator>();
 

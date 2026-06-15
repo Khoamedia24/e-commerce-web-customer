@@ -6,5 +6,6 @@ public interface IProductDetailDataService
 {
     Task<ProductDetailViewModel?> CreateProductDetailAsync(
         string slug,
+        string? variantKey = null,
         CancellationToken cancellationToken = default);
 }

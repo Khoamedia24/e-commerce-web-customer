@@ -9,7 +9,10 @@
     var previewSpecRows = Model.TechnicalSpecSections.SelectMany(section => section.Rows).Take(16).ToList();
     const int visibleReviewLimit = 2;
     var hasMoreReviews = Model.ReviewSummary.Reviews.Count > visibleReviewLimit;
-    var productUrl = Url.Action("Details", "Product", new { slug = Model.Slug }) ?? $"/product/{Model.Slug}";
+    var productUrl = string.IsNullOrWhiteSpace(Model.CartItemId)
+        ? Url.Action("Details", "Product", new { slug = Model.Slug }) ?? $"/product/{Model.Slug}"
+        : Url.Action("Details", "Product", new { slug = Model.Slug, variant = Model.CartItemId })
+            ?? $"/product/{Model.Slug}?variant={Uri.EscapeDataString(Model.CartItemId)}";
     var selectedColorPrice = selectedColor.Price.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
 
@@ -171,9 +174,12 @@
                                     type="button"
                                     data-color-option
                                     data-color-name="@color.Name"
-                                    data-image="@color.ImageUrl"
-                                    data-alt="@color.ImageAlt"
-                                    data-price="@color.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                     data-image="@color.ImageUrl"
+                                     data-alt="@color.ImageAlt"
+                                     data-variant-key="@color.VariantKey"
+                                     data-variant-label="@color.VariantLabel"
+                                     data-detail-url="@color.DetailUrl"
+                                     data-price="@color.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)"
                                     data-price-text="@ProductDetailViewModel.FormatPrice(color.Price)"
                                     aria-pressed="@(color.IsActive ? "true" : "false")">
                                 <img src="@color.ImageUrl"
@@ -195,12 +201,12 @@
                        asp-controller="Checkout"
                        asp-action="Index"
                        data-buy-now
-                       data-cart-id="@Model.Slug"
+                       data-cart-id="@(string.IsNullOrWhiteSpace(Model.CartItemId) ? Model.Slug : Model.CartItemId)"
                        data-cart-name="@Model.Name"
                        data-cart-url="@productUrl"
                        data-cart-image="@selectedColor.ImageUrl"
                        data-cart-alt="@selectedColor.ImageAlt"
-                       data-cart-variant="@selectedColor.Name"
+                       data-cart-variant="@(string.IsNullOrWhiteSpace(Model.SelectedVariantLabel) ? selectedColor.Name : Model.SelectedVariantLabel)"
                        data-cart-price="@selectedColorPrice">
                         <strong>MUA NGAY</strong>
                         <span>Giao nhanh từ 2 giờ hoặc nhận tại cửa hàng</span>
@@ -209,12 +215,12 @@
                     <button class="pd-add-cart"
                             type="button"
                             data-add-to-cart
-                            data-cart-id="@Model.Slug"
+                            data-cart-id="@(string.IsNullOrWhiteSpace(Model.CartItemId) ? Model.Slug : Model.CartItemId)"
                             data-cart-name="@Model.Name"
                             data-cart-url="@productUrl"
                             data-cart-image="@selectedColor.ImageUrl"
                             data-cart-alt="@selectedColor.ImageAlt"
-                            data-cart-variant="@selectedColor.Name"
+                            data-cart-variant="@(string.IsNullOrWhiteSpace(Model.SelectedVariantLabel) ? selectedColor.Name : Model.SelectedVariantLabel)"
                             data-cart-price="@selectedColorPrice">
                         <svg aria-hidden="true"><use href="#hero-icon-cart"></use></svg>
                         <span>Thêm vào giỏ</span>
@@ -571,23 +577,23 @@
                asp-controller="Checkout"
                asp-action="Index"
                data-buy-now
-               data-cart-id="@Model.Slug"
+               data-cart-id="@(string.IsNullOrWhiteSpace(Model.CartItemId) ? Model.Slug : Model.CartItemId)"
                data-cart-name="@Model.Name"
                data-cart-url="@productUrl"
                data-cart-image="@selectedColor.ImageUrl"
                data-cart-alt="@selectedColor.ImageAlt"
-               data-cart-variant="@selectedColor.Name"
+               data-cart-variant="@(string.IsNullOrWhiteSpace(Model.SelectedVariantLabel) ? selectedColor.Name : Model.SelectedVariantLabel)"
                data-cart-price="@selectedColorPrice">Mua Ngay</a>
 
             <button class="pd-sticky-cart"
                     type="button"
                     data-add-to-cart
-                    data-cart-id="@Model.Slug"
+                    data-cart-id="@(string.IsNullOrWhiteSpace(Model.CartItemId) ? Model.Slug : Model.CartItemId)"
                     data-cart-name="@Model.Name"
                     data-cart-url="@productUrl"
                     data-cart-image="@selectedColor.ImageUrl"
                     data-cart-alt="@selectedColor.ImageAlt"
-                    data-cart-variant="@selectedColor.Name"
+                    data-cart-variant="@(string.IsNullOrWhiteSpace(Model.SelectedVariantLabel) ? selectedColor.Name : Model.SelectedVariantLabel)"
                     data-cart-price="@selectedColorPrice"
                     aria-label="Thêm vào giỏ">
                 <svg aria-hidden="true"><use href="#hero-icon-cart"></use></svg>

@@ -1,10 +1,13 @@
 namespace e_commerce_web_customer.Application.Orders;
 
 public sealed record PlaceOrderRequest(
+    string UserEmail,
     string CustomerName,
     string Phone,
     string Email,
-    string DeliveryAddress,
+    string ShippingProvince,
+    string ShippingWard,
+    string ShippingDetail,
     string PaymentMethod,
     string? Note,
     decimal ShippingFee,

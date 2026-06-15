@@ -12,4 +12,7 @@ public interface ICategoryPageViewModelFactory
 public sealed record CategoryPageRequest(
     string Slug,
     string? Brand = null,
-    string? Sort = null);
+    string? Sort = null,
+    IReadOnlyDictionary<string, IReadOnlyList<string>>? Filters = null,
+    bool InStockOnly = false,
+    bool NewArrivalsOnly = false);

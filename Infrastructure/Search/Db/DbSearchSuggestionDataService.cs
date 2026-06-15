@@ -1,5 +1,6 @@
 using e_commerce_web_customer.Application.Contracts;
 using e_commerce_web_customer.Application.Products;
+using e_commerce_web_customer.Application.Search;
 using e_commerce_web_customer.ViewModels.Shared;
 
 namespace e_commerce_web_customer.Infrastructure.Search.Db;
@@ -10,7 +11,9 @@ public sealed class DbSearchSuggestionDataService(IProductCatalog productCatalog
     public async Task<HeaderSearchViewModel> GetInitialSuggestionsAsync(
         CancellationToken cancellationToken = default)
     {
-        var products = await productCatalog.SearchAsync(null, cancellationToken);
+        var products = await productCatalog.SearchAsync(
+            new ProductCatalogSearchRequest(null, 8),
+            cancellationToken);
 
         return new HeaderSearchViewModel
         {
@@ -29,8 +32,8 @@ public sealed class DbSearchSuggestionDataService(IProductCatalog productCatalog
         string? query,
         CancellationToken cancellationToken = default)
     {
-        var normalizedQuery = query?.Trim() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(normalizedQuery))
+        var normalizedQuery = SearchTextNormalizer.CleanQuery(query);
+        if (SearchTextNormalizer.Normalize(normalizedQuery).Length < 2)
         {
             return new SearchSuggestionResultsViewModel
             {
@@ -38,11 +41,32 @@ public sealed class DbSearchSuggestionDataService(IProductCatalog productCatalog
             };
         }
 
-        var products = await productCatalog.SearchAsync(query, cancellationToken);
+        var products = await productCatalog.SearchAsync(
+            new ProductCatalogSearchRequest(normalizedQuery, 6),
+            cancellationToken);
+
+        var normalizedSearch = SearchTextNormalizer.Normalize(normalizedQuery);
+        var suggestions = products
+            .Where(product => !string.Equals(
+                SearchTextNormalizer.Normalize(product.Name),
+                normalizedSearch,
+                StringComparison.Ordinal))
+            .DistinctBy(
+                product => SearchTextNormalizer.Normalize(product.Name))
+            .Take(4)
+            .Select(product => new SearchQuickLinkViewModel
+            {
+                Label = product.Name,
+                Url = $"/search?q={Uri.EscapeDataString(product.Name)}",
+                ImageUrl = product.ImageUrl,
+                ImageAlt = product.ImageAlt
+            })
+            .ToList();
 
         return new SearchSuggestionResultsViewModel
         {
             Query = normalizedQuery,
+            Suggestions = suggestions,
             Products = products
                 .Take(6)
                 .Select(ProductViewModelMapper.ToSearchSuggestion)

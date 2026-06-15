@@ -1,11 +1,14 @@
 using e_commerce_web_customer.Application.Contracts;
 using e_commerce_web_customer.Application.Constants;
+using e_commerce_web_customer.Application.Services;
 using e_commerce_web_customer.ViewModels.Account;
 using Microsoft.AspNetCore.Mvc;
 
 namespace e_commerce_web_customer.Controllers;
 
-public sealed class AccountController(IAccountService accountService) : Controller
+public sealed class AccountController(
+    IAccountService accountService,
+    CartSessionService cartSession) : Controller
 {
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
@@ -65,6 +68,8 @@ public sealed class AccountController(IAccountService accountService) : Controll
     [ValidateAntiForgeryToken]
     public IActionResult Logout()
     {
+        cartSession.Clear();
+        cartSession.ClearBuyNow();
         HttpContext.Session.Remove(SessionKeys.IsLoggedIn);
         HttpContext.Session.Remove(SessionKeys.UserEmail);
         HttpContext.Session.Remove(SessionKeys.UserDisplayName);

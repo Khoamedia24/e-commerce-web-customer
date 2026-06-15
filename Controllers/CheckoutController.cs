@@ -10,6 +10,8 @@ namespace e_commerce_web_customer.Controllers;
 
 public sealed class CheckoutController(
     CartSessionService cartSession,
+    ICartItemValidator cartItemValidator,
+    ICartPersistenceService cartPersistenceService,
     ICartDemoDataProvider demoDataProvider,
     IOrderService orderService) : Controller
 {
@@ -78,7 +80,7 @@ public sealed class CheckoutController(
             HttpContext.Session.SetString(
                 SuccessSessionKey,
                 JsonSerializer.Serialize(successModel));
-            ClearCompletedCart(mode);
+            await ClearCompletedCartAsync(mode, cancellationToken);
 
             return RedirectToAction(nameof(Success));
         }
@@ -112,10 +114,58 @@ public sealed class CheckoutController(
             ? cartSession.LoadBuyNow()
             : cartSession.Load();
 
+        if (sessionItems.Count == 0
+            && !string.Equals(mode, "buynow", StringComparison.OrdinalIgnoreCase)
+            && GetLoggedInUserEmail() is { } storedCartEmail)
+        {
+            sessionItems = await cartPersistenceService.LoadAsync(
+                storedCartEmail,
+                cancellationToken);
+            cartSession.Save(sessionItems);
+        }
+
         IReadOnlyList<CheckoutItemViewModel> items;
         if (sessionItems.Count > 0)
         {
-            items = sessionItems.Select(item => new CheckoutItemViewModel
+            var validatedItems = new List<CartSessionItem>();
+            foreach (var sessionItem in sessionItems)
+            {
+                try
+                {
+                    validatedItems.Add(await cartItemValidator.ValidateAsync(
+                        sessionItem,
+                        cancellationToken));
+                }
+                catch (CartItemValidationException)
+                {
+                    // Products that became inactive or out of stock are removed.
+                }
+            }
+
+            if (string.Equals(mode, "buynow", StringComparison.OrdinalIgnoreCase))
+            {
+                if (validatedItems.Count > 0)
+                {
+                    cartSession.SaveBuyNow(validatedItems[0]);
+                }
+                else
+                {
+                    cartSession.ClearBuyNow();
+                }
+            }
+            else
+            {
+                cartSession.Save(validatedItems);
+                if (GetLoggedInUserEmail() is { } userEmail)
+                {
+                    await cartPersistenceService.SaveAsync(
+                        userEmail,
+                        validatedItems,
+                        cancellationToken);
+                }
+            }
+
+            items = validatedItems.Select(item => new CheckoutItemViewModel
             {
                 ProductId = item.Id,
                 Name = item.Name,
@@ -144,15 +194,18 @@ public sealed class CheckoutController(
         };
     }
 
-    private static PlaceOrderRequest BuildOrderRequest(
+    private PlaceOrderRequest BuildOrderRequest(
         CheckoutViewModel submittedModel,
         CheckoutViewModel order)
     {
         return new PlaceOrderRequest(
+            GetRequiredLoggedInUserEmail(),
             submittedModel.FullName.Trim(),
             submittedModel.Phone.Trim(),
             submittedModel.Email.Trim(),
-            BuildDeliveryAddress(submittedModel),
+            submittedModel.Province.Trim(),
+            submittedModel.Ward.Trim(),
+            BuildShippingDetail(submittedModel),
             submittedModel.PaymentMethod.ToString(),
             submittedModel.Note?.Trim(),
             order.ShippingFee,
@@ -235,7 +288,9 @@ public sealed class CheckoutController(
         target.Discount = source.Discount;
     }
 
-    private void ClearCompletedCart(string mode)
+    private async Task ClearCompletedCartAsync(
+        string mode,
+        CancellationToken cancellationToken)
     {
         if (string.Equals(mode, "buynow", StringComparison.OrdinalIgnoreCase))
         {
@@ -244,11 +299,34 @@ public sealed class CheckoutController(
         }
 
         cartSession.Clear();
+        if (GetLoggedInUserEmail() is { } userEmail)
+        {
+            await cartPersistenceService.ClearAsync(
+                userEmail,
+                cancellationToken);
+        }
     }
 
     private bool IsLoggedIn()
     {
         return HttpContext.Session.GetString(SessionKeys.IsLoggedIn) == "true";
+    }
+
+    private string? GetLoggedInUserEmail()
+    {
+        if (!IsLoggedIn())
+        {
+            return null;
+        }
+
+        var email = HttpContext.Session.GetString(SessionKeys.UserEmail);
+        return string.IsNullOrWhiteSpace(email) ? null : email.Trim();
+    }
+
+    private string GetRequiredLoggedInUserEmail()
+    {
+        return GetLoggedInUserEmail()
+            ?? throw new OrderPlacementException("Không xác định được tài khoản đặt hàng.");
     }
 
     private IActionResult RedirectToLogin(string mode)
@@ -281,6 +359,21 @@ public sealed class CheckoutController(
         return string.IsNullOrWhiteSpace(address)
             ? "Địa chỉ sẽ được xác nhận qua điện thoại."
             : address;
+    }
+
+    private static string BuildShippingDetail(CheckoutViewModel model)
+    {
+        var parts = new[]
+        {
+            model.AddressDetail,
+            model.District
+        };
+
+        return string.Join(
+            ", ",
+            parts
+                .Where(part => !string.IsNullOrWhiteSpace(part))
+                .Select(part => part.Trim()));
     }
 
     private static string FormatItemCount(

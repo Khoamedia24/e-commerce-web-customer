@@ -59,20 +59,29 @@ public sealed class MockProductCatalog : IProductCatalog
         BuildProductIndex();
 
     public Task<IReadOnlyList<ProductReadModel>> SearchAsync(
-        string? query,
+        ProductCatalogSearchRequest request,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var normalizedQuery = SearchTextNormalizer.Normalize(query ?? string.Empty);
-        IReadOnlyList<ProductReadModel> result = string.IsNullOrWhiteSpace(normalizedQuery)
+        var normalizedQuery = SearchTextNormalizer.Normalize(request.Query ?? string.Empty);
+        IEnumerable<ProductReadModel> result = string.IsNullOrWhiteSpace(normalizedQuery)
             ? Products
             : Products
                 .Where(product => SearchTextNormalizer.Normalize(product.SearchText)
-                    .Contains(normalizedQuery, StringComparison.Ordinal))
-                .ToList();
+                    .Contains(normalizedQuery, StringComparison.Ordinal));
 
-        return Task.FromResult(result);
+        if (request.Scope == ProductCatalogSearchScope.Products)
+        {
+            result = DeduplicateProducts(result);
+        }
+
+        if (request.Limit is > 0)
+        {
+            result = result.Take(request.Limit.Value);
+        }
+
+        return Task.FromResult<IReadOnlyList<ProductReadModel>>(result.ToList());
     }
 
     public Task<ProductReadModel?> GetByIdAsync(
@@ -94,39 +103,115 @@ public sealed class MockProductCatalog : IProductCatalog
         decimal? studentPrice,
         IReadOnlyList<string>? aliases = null)
     {
+        var productId = ToBaseProductId(id);
+        var displayName = name.Trim();
         var imageUrl = imageName.StartsWith("/", StringComparison.Ordinal)
             ? imageName
             : $"{PhoneImageRoot}/{imageName}";
+        var searchAliases = new[] { id, productId }
+            .Concat(aliases ?? [])
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
         return new ProductReadModel(
             id,
-            name,
-            $"/product/{id}",
+            displayName,
+            BuildVariantUrl(productId, id),
             imageUrl,
-            name,
+            displayName,
             currentPrice,
             oldPrice,
             discountPercent,
             studentPrice,
             DefaultPromotion,
-            $"{id} {name} điện thoại máy tính bảng phụ kiện cũ giá rẻ",
-            aliases);
+            $"{id} {name} {displayName} điện thoại máy tính bảng phụ kiện cũ giá rẻ",
+            searchAliases);
     }
 
     private static IReadOnlyDictionary<string, ProductReadModel> BuildProductIndex()
     {
         var index = new Dictionary<string, ProductReadModel>(StringComparer.OrdinalIgnoreCase);
 
+        foreach (var product in DeduplicateProducts(Products))
+        {
+            index[product.Id] = product;
+        }
+
         foreach (var product in Products)
         {
             index[product.Id] = product;
             foreach (var alias in product.Aliases ?? [])
             {
-                index[alias] = product;
+                index.TryAdd(alias, product);
             }
         }
 
         return index;
+    }
+
+    private static IEnumerable<ProductReadModel> DeduplicateProducts(
+        IEnumerable<ProductReadModel> products)
+    {
+        return products
+            .GroupBy(product => ToBaseProductId(product.Id), StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                var groupItems = group.ToList();
+                var product = groupItems
+                    .OrderBy(product => product.CurrentPrice)
+                    .ThenBy(product => product.Name)
+                    .First();
+                var baseId = ToBaseProductId(product.Id);
+                var baseName = ProductDisplayNameNormalizer.ToBaseName(product.Name);
+                var aliases = groupItems
+                    .SelectMany(item => new[] { item.Id }.Concat(item.Aliases ?? []))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                return product with
+                {
+                    Id = baseId,
+                    Name = baseName,
+                    ProductUrl = $"/product/{baseId}",
+                    ImageAlt = baseName,
+                    SearchText = string.Join(' ', groupItems.Select(item => item.SearchText)),
+                    Aliases = aliases,
+                    AvailabilityLabel = groupItems.Any(item => item.AvailabilityLabel is null)
+                        ? null
+                        : "Tạm hết hàng"
+                };
+            });
+    }
+
+    private static string BuildVariantUrl(string productId, string variantId)
+    {
+        return string.Equals(productId, variantId, StringComparison.OrdinalIgnoreCase)
+            ? $"/product/{productId}"
+            : $"/product/{productId}?variant={Uri.EscapeDataString(variantId)}";
+    }
+
+    private static string ToBaseProductId(string id)
+    {
+        var parts = id.Split('-', StringSplitOptions.RemoveEmptyEntries).ToList();
+        while (parts.Count > 0 && IsCapacitySegment(parts[^1]))
+        {
+            parts.RemoveAt(parts.Count - 1);
+        }
+
+        return parts.Count == 0 ? id : string.Join('-', parts);
+    }
+
+    private static bool IsCapacitySegment(string value)
+    {
+        if (!value.EndsWith("gb", StringComparison.OrdinalIgnoreCase)
+            && !value.EndsWith("tb", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var numberPart = value[..^2];
+        return numberPart.Length > 0
+            && numberPart.All(char.IsDigit);
     }
 
 }

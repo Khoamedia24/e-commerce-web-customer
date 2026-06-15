@@ -71,10 +71,23 @@
 
         @if (Model.Brands.Count > 0)
         {
-            <nav class="catalog-brand-list" aria-label="Thương hiệu điện thoại">
+            <nav class="catalog-brand-list" aria-label="Thương hiệu sản phẩm">
                 @foreach (var brand in Model.Brands)
                 {
-                    <a href="@brand.Url" data-brand="@brand.Id">@brand.Label</a>
+                    <a href="@brand.Url" data-brand="@brand.Id">
+                        @if (!string.IsNullOrWhiteSpace(brand.ImageUrl))
+                        {
+                            <img src="@brand.ImageUrl"
+                                 alt="@(brand.ImageAlt ?? brand.Label)"
+                                 width="96"
+                                 height="32"
+                                 loading="lazy" />
+                        }
+                        else
+                        {
+                            <span>@brand.Label</span>
+                        }
+                    </a>
                 }
             </nav>
         }

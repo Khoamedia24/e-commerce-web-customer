@@ -20,11 +20,94 @@
   const suggestionBlock = layer.querySelector('[data-search-suggestion-block]');
   const productBlock = layer.querySelector('[data-search-product-block]');
   const historyBlock = layer.querySelector('[data-search-history-block]');
+  const historyList = layer.querySelector('[data-search-history-list]');
   const clearHistoryButton = layer.querySelector('[data-search-clear-history]');
   const endpoint = root.dataset.searchEndpoint || '/search/suggest';
+  const historyCookieName = 'techstore_search_history';
+  const maxHistoryItems = 6;
+  const historyCookieMaxAge = 60 * 60 * 24 * 90;
 
   let debounceTimer = null;
   let requestId = 0;
+  let activeRequest = null;
+
+  function readSearchHistory() {
+    try {
+      const cookiePrefix = `${historyCookieName}=`;
+      const storedValue = document.cookie
+        .split(';')
+        .map((item) => item.trim())
+        .find((item) => item.startsWith(cookiePrefix))
+        ?.slice(cookiePrefix.length);
+      const items = storedValue
+        ? JSON.parse(decodeURIComponent(storedValue))
+        : [];
+      return Array.isArray(items)
+        ? items.filter((item) => typeof item === 'string' && item.trim()).slice(0, maxHistoryItems)
+        : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function writeSearchHistory(items) {
+    try {
+      const value = encodeURIComponent(JSON.stringify(items));
+      document.cookie = `${historyCookieName}=${value}; Path=/; Max-Age=${historyCookieMaxAge}; SameSite=Lax`;
+    } catch {
+      // Search remains usable when storage is unavailable.
+    }
+  }
+
+  function createHistoryLink(query) {
+    const link = document.createElement('a');
+    link.className = 'site-search-history-link';
+    link.href = `/search?q=${encodeURIComponent(query)}`;
+
+    const icon = document.createElement('span');
+    icon.className = 'site-search-history-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = '↺';
+
+    const label = document.createElement('span');
+    label.textContent = query;
+    link.append(icon, label);
+    return link;
+  }
+
+  function renderSearchHistory() {
+    if (!historyBlock || !historyList) {
+      return;
+    }
+
+    const items = readSearchHistory();
+    historyList.replaceChildren(...items.map(createHistoryLink));
+    historyBlock.hidden = items.length === 0;
+  }
+
+  function saveSearchHistory(query) {
+    const cleanedQuery = query?.trim();
+    if (!cleanedQuery) {
+      return;
+    }
+
+    const normalizedQuery = cleanedQuery.toLocaleLowerCase('vi');
+    const items = readSearchHistory()
+      .filter((item) => item.toLocaleLowerCase('vi') !== normalizedQuery);
+    items.unshift(cleanedQuery);
+    writeSearchHistory(items.slice(0, maxHistoryItems));
+    renderSearchHistory();
+  }
+
+  function clearSearchHistory() {
+    try {
+      document.cookie = `${historyCookieName}=; Path=/; Max-Age=0; SameSite=Lax`;
+    } catch {
+      // Ignore storage restrictions and update the visible state.
+    }
+
+    renderSearchHistory();
+  }
 
   function setState(name) {
     states.forEach((state, stateName) => {
@@ -62,6 +145,7 @@
   function openSearch() {
     closeCategoryMenu();
     closeAccountMenu();
+    renderSearchHistory();
     updatePosition();
     layer.hidden = false;
     form?.setAttribute('aria-expanded', 'true');
@@ -111,6 +195,7 @@
     syncClearButton();
     const query = input.value.trim();
     if (!query) {
+      renderSearchHistory();
       setState('idle');
       return;
     }
@@ -125,12 +210,15 @@
 
   async function fetchResults(query) {
     const currentRequestId = ++requestId;
+    activeRequest?.abort();
+    activeRequest = new AbortController();
 
     try {
       const response = await fetch(`${endpoint}?q=${encodeURIComponent(query)}`, {
         headers: {
           Accept: 'application/json'
-        }
+        },
+        signal: activeRequest.signal
       });
 
       if (!response.ok) {
@@ -143,8 +231,16 @@
       }
 
       renderResults(data);
-    } catch {
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        return;
+      }
+
       renderResults({ suggestions: [], products: [] });
+    } finally {
+      if (currentRequestId === requestId) {
+        activeRequest = null;
+      }
     }
   }
 
@@ -184,6 +280,8 @@
       image.height = 36;
       image.loading = 'lazy';
       link.append(image);
+    } else {
+      link.classList.add('site-search-suggestion-link--text-only');
     }
 
     const label = document.createElement('span');
@@ -246,16 +344,29 @@
   });
 
   clearHistoryButton?.addEventListener('click', () => {
-    if (historyBlock) {
-      historyBlock.hidden = true;
-    }
+    clearSearchHistory();
   });
 
   form?.addEventListener('submit', (event) => {
     if (!input?.value.trim()) {
       event.preventDefault();
       openSearch();
+      return;
     }
+
+    saveSearchHistory(input.value);
+  });
+
+  layer.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const link = target?.closest('a');
+    if (!link) {
+      return;
+    }
+
+    const linkUrl = new URL(link.href, window.location.origin);
+    const linkedQuery = linkUrl.searchParams.get('q');
+    saveSearchHistory(linkedQuery || input?.value);
   });
 
   document.addEventListener('keydown', (event) => {
@@ -271,4 +382,11 @@
       updatePosition();
     }
   }, { passive: true });
+
+  const pageQuery = new URLSearchParams(window.location.search).get('q');
+  if (window.location.pathname.toLowerCase() === '/search' && pageQuery) {
+    saveSearchHistory(pageQuery);
+  } else {
+    renderSearchHistory();
+  }
 })();

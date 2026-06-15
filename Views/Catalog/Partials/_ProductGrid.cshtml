@@ -34,9 +34,21 @@
         else
         {
             <div class="catalog-empty-state">
-                <h2>Chưa có sản phẩm</h2>
-                <p>Sản phẩm của danh mục này đang được cập nhật.</p>
-                <a class="btn btn-primary" href="/">Về trang chủ</a>
+                @if (Model.Filter.ActiveSelectionCount > 0)
+                {
+                    <h2>Không tìm thấy sản phẩm phù hợp</h2>
+                    <p>Hãy bỏ bớt một tiêu chí hoặc xóa bộ lọc để xem thêm sản phẩm.</p>
+                    <a class="btn btn-primary"
+                       href="@Model.Filter.PrimaryItems.First().Url">
+                        Xóa bộ lọc
+                    </a>
+                }
+                else
+                {
+                    <h2>Chưa có sản phẩm</h2>
+                    <p>Sản phẩm của danh mục này đang được cập nhật.</p>
+                    <a class="btn btn-primary" href="/">Về trang chủ</a>
+                }
             </div>
         }
     </div>

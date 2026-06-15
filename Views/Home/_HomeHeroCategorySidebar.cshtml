@@ -9,31 +9,68 @@
         {
             var megaPanelId = $"home-{category.Id}-mega";
             var labelId = $"home-{category.Id}-menu-label";
-            var labelParts = category.Label.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            IReadOnlyList<SiteCategoryMenuLinkViewModel> categoryLinks = category.CategoryLinks.Count > 0
+                ? category.CategoryLinks
+                : new[]
+                {
+                    new SiteCategoryMenuLinkViewModel
+                    {
+                        Label = category.Label,
+                        Url = category.Url
+                    }
+                };
+            var isSplitItem = categoryLinks.Count > 1;
 
             <div class="hero-cat-entry"
                  data-category-entry
                  data-category-mega-panel-id="@megaPanelId">
-                <a class="hero-cat-item"
-                   href="@category.Url"
-                   aria-label="@category.Label"
-                   aria-haspopup="true"
-                   aria-expanded="false"
-                   aria-controls="@megaPanelId"
-                   data-category-link>
-                    <svg class="hero-ui-icon hero-cat-icon" aria-hidden="true">
-                        <use href="@($"#hero-icon-{category.Icon}")"></use>
-                    </svg>
-                    <span class="hero-cat-label" id="@labelId">
-                        @foreach (var labelPart in labelParts)
-                        {
-                            <span class="hero-cat-label-part">@labelPart</span>
-                        }
-                    </span>
-                    <svg class="hero-ui-icon hero-cat-arrow" aria-hidden="true">
-                        <use href="#hero-icon-chevron"></use>
-                    </svg>
-                </a>
+                @if (isSplitItem)
+                {
+                    <div class="hero-cat-item hero-cat-item--split"
+                         role="group"
+                         tabindex="-1"
+                         aria-label="@category.Label"
+                         aria-haspopup="true"
+                         aria-expanded="false"
+                         aria-controls="@megaPanelId"
+                         data-category-link>
+                        <svg class="hero-ui-icon hero-cat-icon" aria-hidden="true">
+                            <use href="@($"#hero-icon-{category.Icon}")"></use>
+                        </svg>
+                        <span class="hero-cat-label" id="@labelId">
+                            @foreach (var categoryLink in categoryLinks)
+                            {
+                                <a class="hero-cat-label-part hero-cat-label-link"
+                                   href="@categoryLink.Url">@categoryLink.Label</a>
+                            }
+                        </span>
+                        <svg class="hero-ui-icon hero-cat-arrow" aria-hidden="true">
+                            <use href="#hero-icon-chevron"></use>
+                        </svg>
+                    </div>
+                }
+                else
+                {
+                    var categoryLink = categoryLinks[0];
+
+                    <a class="hero-cat-item"
+                       href="@categoryLink.Url"
+                       aria-label="@category.Label"
+                       aria-haspopup="true"
+                       aria-expanded="false"
+                       aria-controls="@megaPanelId"
+                       data-category-link>
+                        <svg class="hero-ui-icon hero-cat-icon" aria-hidden="true">
+                            <use href="@($"#hero-icon-{category.Icon}")"></use>
+                        </svg>
+                        <span class="hero-cat-label" id="@labelId">
+                            <span class="hero-cat-label-part">@categoryLink.Label</span>
+                        </span>
+                        <svg class="hero-ui-icon hero-cat-arrow" aria-hidden="true">
+                            <use href="#hero-icon-chevron"></use>
+                        </svg>
+                    </a>
+                }
             </div>
         }
     </nav>

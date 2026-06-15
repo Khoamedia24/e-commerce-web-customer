@@ -123,6 +123,7 @@
       updateMainImage(colorOption.dataset.image, colorOption.dataset.alt);
       updateStickyProduct(colorOption.dataset.image, colorOption.dataset.colorName, colorOption.dataset.priceText);
       syncCartActionsFromColor(colorOption);
+      syncVariantUrl(colorOption.dataset.detailUrl);
       return;
     }
 
@@ -330,11 +331,22 @@
 
   function syncCartActionsFromColor(colorOption) {
     cartActions.forEach((action) => {
+      action.dataset.cartId = colorOption.dataset.variantKey || action.dataset.cartId || '';
       action.dataset.cartImage = colorOption.dataset.image || action.dataset.cartImage || '';
       action.dataset.cartAlt = colorOption.dataset.alt || action.dataset.cartAlt || '';
-      action.dataset.cartVariant = colorOption.dataset.colorName || action.dataset.cartVariant || '';
+      action.dataset.cartVariant = colorOption.dataset.variantLabel
+        || colorOption.dataset.colorName
+        || action.dataset.cartVariant
+        || '';
       action.dataset.cartPrice = colorOption.dataset.price || action.dataset.cartPrice || '';
+      action.dataset.cartUrl = colorOption.dataset.detailUrl || action.dataset.cartUrl || '';
     });
+  }
+
+  function syncVariantUrl(detailUrl) {
+    if (!detailUrl) return;
+
+    window.history.replaceState(null, '', detailUrl);
   }
 
   async function submitCartAction(action, endpoint, options = {}) {
@@ -353,11 +365,22 @@
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        throw new Error(`Cart request failed with status ${response.status}`);
+      const result = await response.json().catch(() => ({}));
+
+      if (response.status === 401 && result.redirectUrl) {
+        window.showToast?.(
+          result.error || 'Vui lòng đăng nhập để sử dụng giỏ hàng.',
+          'info'
+        );
+        window.location.href = result.redirectUrl;
+        return;
       }
 
-      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          result.error || `Cart request failed with status ${response.status}`
+        );
+      }
 
       if (Number.isFinite(Number(result.count))) {
         window.updateCartCount?.(Number(result.count));

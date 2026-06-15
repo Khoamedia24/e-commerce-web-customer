@@ -6,32 +6,119 @@
     <div class="container">
         <h2 id="catalog-filter-title">@Model.Title</h2>
 
-        <div class="catalog-filter-row catalog-filter-row--primary">
-            @foreach (var item in Model.PrimaryItems)
-            {
-                <a class="catalog-filter-chip @(item.IsEmphasized ? "is-emphasized" : null)"
-                   href="@item.Url">
-                    @if (!string.IsNullOrWhiteSpace(item.Icon))
-                    {
-                        <svg aria-hidden="true">
-                            <use href="#catalog-icon-@item.Icon"></use>
-                        </svg>
-                    }
-                    <span>@item.Label</span>
-                    @if (item.HasDropdown)
-                    {
-                        <i class="catalog-filter-chip__chevron" aria-hidden="true"></i>
-                    }
-                </a>
-            }
-        </div>
-
-        @if (Model.SecondaryItems.Count > 0)
+        @if (Model.Groups.Count > 0)
         {
-            <div class="catalog-filter-row catalog-filter-row--secondary">
-                @foreach (var item in Model.SecondaryItems)
+            <form class="catalog-filter-form"
+                  action="/catalog"
+                  method="get"
+                  data-catalog-filter-form>
+                <input type="hidden" name="cat" value="@Model.CategorySlug" />
+                @if (!string.IsNullOrWhiteSpace(Model.Brand))
                 {
-                    <a class="catalog-filter-chip" href="@item.Url">
+                    <input type="hidden" name="brand" value="@Model.Brand" />
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Sort))
+                {
+                    <input type="hidden" name="sort" value="@Model.Sort" />
+                }
+
+                <div class="catalog-filter-row catalog-filter-row--primary">
+                    @foreach (var item in Model.PrimaryItems)
+                    {
+                        <a class="catalog-filter-chip @(item.IsEmphasized ? "is-emphasized" : null) @(item.IsActive ? "is-active" : null)"
+                           href="@item.Url"
+                           aria-pressed="@(item.IsActive ? "true" : "false")">
+                            @if (!string.IsNullOrWhiteSpace(item.Icon))
+                            {
+                                <svg aria-hidden="true">
+                                    <use href="#catalog-icon-@item.Icon"></use>
+                                </svg>
+                            }
+                            <span>@item.Label</span>
+                        </a>
+                    }
+
+                    @foreach (var group in Model.Groups)
+                    {
+                        var panelId = $"catalog-filter-{group.Key}";
+                        <div class="catalog-filter-group @(group.SelectedCount > 0 ? "has-selection" : null)"
+                             data-filter-group>
+                            <button class="catalog-filter-chip catalog-filter-trigger"
+                                    type="button"
+                                    aria-expanded="false"
+                                    aria-controls="@panelId"
+                                    data-filter-trigger>
+                                @if (!string.IsNullOrWhiteSpace(group.Icon))
+                                {
+                                    <svg aria-hidden="true">
+                                        <use href="#catalog-icon-@group.Icon"></use>
+                                    </svg>
+                                }
+                                <span>@group.Label</span>
+                                <span class="catalog-filter-chip__count"
+                                      data-filter-count
+                                      hidden="@(group.SelectedCount == 0)">
+                                    @group.SelectedCount
+                                </span>
+                                <i class="catalog-filter-chip__chevron" aria-hidden="true"></i>
+                            </button>
+
+                            <div class="catalog-filter-panel"
+                                 id="@panelId"
+                                 data-filter-panel
+                                 hidden>
+                                <fieldset>
+                                    <legend class="sr-only">Lọc theo @group.Label</legend>
+                                    <div class="catalog-filter-options">
+                                        @foreach (var option in group.Options)
+                                        {
+                                            <label class="catalog-filter-option @(option.IsSelected ? "is-selected" : null) @(!option.IsAvailable ? "is-disabled" : null)">
+                                                <input type="checkbox"
+                                                       name="f_@group.Key"
+                                                       value="@option.Value"
+                                                       checked="@option.IsSelected"
+                                                       disabled="@(!option.IsAvailable)"
+                                                       data-initial-checked="@(option.IsSelected ? "true" : "false")" />
+                                                <span>@option.Label</span>
+                                            </label>
+                                        }
+                                    </div>
+                                </fieldset>
+
+                                <div class="catalog-filter-panel__actions">
+                                    <button type="button"
+                                            class="catalog-filter-panel__close"
+                                            data-filter-close>
+                                        Đóng
+                                    </button>
+                                    <button type="submit"
+                                            class="catalog-filter-panel__apply">
+                                        Xem kết quả
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <p class="sr-only" aria-live="polite" data-filter-status>
+                    Có @Model.ResultCount sản phẩm phù hợp.
+                </p>
+            </form>
+        }
+        else
+        {
+            <div class="catalog-filter-row catalog-filter-row--primary">
+                @foreach (var item in Model.PrimaryItems)
+                {
+                    <a class="catalog-filter-chip @(item.IsEmphasized ? "is-emphasized" : null)"
+                       href="@item.Url">
+                        @if (!string.IsNullOrWhiteSpace(item.Icon))
+                        {
+                            <svg aria-hidden="true">
+                                <use href="#catalog-icon-@item.Icon"></use>
+                            </svg>
+                        }
                         <span>@item.Label</span>
                         @if (item.HasDropdown)
                         {
@@ -40,6 +127,22 @@
                     </a>
                 }
             </div>
+
+            @if (Model.SecondaryItems.Count > 0)
+            {
+                <div class="catalog-filter-row catalog-filter-row--secondary">
+                    @foreach (var item in Model.SecondaryItems)
+                    {
+                        <a class="catalog-filter-chip" href="@item.Url">
+                            <span>@item.Label</span>
+                            @if (item.HasDropdown)
+                            {
+                                <i class="catalog-filter-chip__chevron" aria-hidden="true"></i>
+                            }
+                        </a>
+                    }
+                </div>
+            }
         }
     </div>
 </section>

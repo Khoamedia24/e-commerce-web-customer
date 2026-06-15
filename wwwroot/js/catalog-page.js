@@ -9,6 +9,7 @@
   initializePromoCarousel();
   initializeHotSaleCarousel();
   initializeStickyFilter();
+  initializeFilterDropdowns();
   initializeSectionNavigation();
   initializeSectionPills();
   initializeSectionReveals();
@@ -103,6 +104,172 @@
     });
 
     observer.observe(sentinel);
+  }
+
+  function initializeFilterDropdowns() {
+    const form = page.querySelector('[data-catalog-filter-form]');
+    if (!form) return;
+
+    const groups = Array.from(form.querySelectorAll('[data-filter-group]'));
+    const status = form.querySelector('[data-filter-status]');
+    let openGroup = null;
+
+    const updateGroupState = (group) => {
+      const checkedCount = group.querySelectorAll(
+        '.catalog-filter-option input:checked'
+      ).length;
+      const count = group.querySelector('[data-filter-count]');
+
+      group.classList.toggle('has-selection', checkedCount > 0);
+      if (count) {
+        count.textContent = String(checkedCount);
+        count.hidden = checkedCount === 0;
+      }
+
+      if (status) {
+        const total = form.querySelectorAll(
+          '.catalog-filter-option input:checked'
+        ).length;
+        status.textContent = total > 0
+          ? `Đã chọn ${total} tiêu chí. Nhấn Xem kết quả để áp dụng.`
+          : 'Chưa chọn tiêu chí lọc.';
+      }
+    };
+
+    const restoreGroup = (group) => {
+      group.querySelectorAll('.catalog-filter-option input').forEach((input) => {
+        input.checked = input.dataset.initialChecked === 'true';
+        input.closest('.catalog-filter-option')?.classList.toggle(
+          'is-selected',
+          input.checked
+        );
+      });
+      updateGroupState(group);
+    };
+
+    const closeGroup = (group, restore = false) => {
+      if (!group) return;
+
+      if (restore) restoreGroup(group);
+
+      const trigger = group.querySelector('[data-filter-trigger]');
+      const panel = group.querySelector('[data-filter-panel]');
+
+      group.classList.remove('is-open');
+      trigger?.setAttribute('aria-expanded', 'false');
+      if (panel) {
+        panel.hidden = true;
+        panel.style.removeProperty('top');
+        panel.style.removeProperty('left');
+        panel.style.removeProperty('max-height');
+      }
+
+      if (openGroup === group) openGroup = null;
+    };
+
+    const positionPanel = (group) => {
+      const trigger = group.querySelector('[data-filter-trigger]');
+      const panel = group.querySelector('[data-filter-panel]');
+      if (!trigger || !panel || panel.hidden) return;
+
+      const viewportPadding = 12;
+      const gap = 8;
+      const triggerRect = trigger.getBoundingClientRect();
+      const panelWidth = panel.getBoundingClientRect().width;
+      const left = Math.min(
+        Math.max(viewportPadding, triggerRect.left),
+        Math.max(viewportPadding, window.innerWidth - panelWidth - viewportPadding)
+      );
+      const spaceBelow = window.innerHeight - triggerRect.bottom - gap - viewportPadding;
+      const spaceAbove = triggerRect.top - gap - viewportPadding;
+      const opensAbove = spaceBelow < 190 && spaceAbove > spaceBelow;
+      const maxHeight = Math.max(170, opensAbove ? spaceAbove : spaceBelow);
+
+      panel.style.left = `${Math.round(left)}px`;
+      panel.style.maxHeight = `${Math.floor(maxHeight)}px`;
+
+      if (opensAbove) {
+        const panelHeight = Math.min(panel.scrollHeight, maxHeight);
+        panel.style.top = `${Math.max(
+          viewportPadding,
+          Math.round(triggerRect.top - panelHeight - gap)
+        )}px`;
+      } else {
+        panel.style.top = `${Math.round(triggerRect.bottom + gap)}px`;
+      }
+    };
+
+    const openFilterGroup = (group) => {
+      if (openGroup && openGroup !== group) {
+        closeGroup(openGroup);
+      }
+
+      const trigger = group.querySelector('[data-filter-trigger]');
+      const panel = group.querySelector('[data-filter-panel]');
+      if (!trigger || !panel) return;
+
+      panel.hidden = false;
+      group.classList.add('is-open');
+      trigger.setAttribute('aria-expanded', 'true');
+      openGroup = group;
+      positionPanel(group);
+    };
+
+    groups.forEach((group) => {
+      const trigger = group.querySelector('[data-filter-trigger]');
+
+      trigger?.addEventListener('click', () => {
+        if (group.classList.contains('is-open')) {
+          closeGroup(group);
+        } else {
+          openFilterGroup(group);
+        }
+      });
+
+      group.querySelector('[data-filter-close]')?.addEventListener('click', () => {
+        closeGroup(group, true);
+        trigger?.focus();
+      });
+
+      group.querySelectorAll('.catalog-filter-option input').forEach((input) => {
+        input.addEventListener('change', () => {
+          input.closest('.catalog-filter-option')?.classList.toggle(
+            'is-selected',
+            input.checked
+          );
+          updateGroupState(group);
+        });
+      });
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!openGroup || openGroup.contains(event.target)) return;
+      closeGroup(openGroup, true);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !openGroup) return;
+
+      const trigger = openGroup.querySelector('[data-filter-trigger]');
+      closeGroup(openGroup, true);
+      trigger?.focus();
+    });
+
+    window.addEventListener('resize', () => {
+      if (openGroup) positionPanel(openGroup);
+    });
+
+    window.addEventListener('scroll', () => {
+      if (openGroup) closeGroup(openGroup);
+    }, { passive: true });
+
+    form.addEventListener('submit', () => {
+      form.setAttribute('aria-busy', 'true');
+      form.querySelectorAll('.catalog-filter-panel__apply').forEach((button) => {
+        button.disabled = true;
+        button.textContent = 'Đang lọc...';
+      });
+    });
   }
 
   function initializeSectionNavigation() {

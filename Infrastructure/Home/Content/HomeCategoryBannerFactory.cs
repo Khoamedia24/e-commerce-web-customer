@@ -1,6 +1,6 @@
 using e_commerce_web_customer.ViewModels.Home;
 
-namespace e_commerce_web_customer.Infrastructure.Home.Mock;
+namespace e_commerce_web_customer.Infrastructure.Home.Content;
 
 internal static class HomeCategoryBannerFactory
 {

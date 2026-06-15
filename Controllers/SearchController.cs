@@ -12,10 +12,11 @@ public sealed class SearchController(
     public async Task<IActionResult> Index(
         [FromQuery] string? q,
         [FromQuery] string? sort,
+        [FromQuery] string? category,
         CancellationToken cancellationToken)
     {
         var model = await searchResultProvider.SearchAsync(
-            new SearchResultRequest(q, sort),
+            new SearchResultRequest(q, sort, category),
             cancellationToken);
 
         return View(model);
