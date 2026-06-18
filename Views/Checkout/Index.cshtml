@@ -136,7 +136,7 @@
                                 <span asp-validation-for="AddressDetail" class="co-field-error"></span>
                             </div>
 
-                            @* Google Map picker *@
+                            @* Google Map picker (Đã ẩn - sẽ mở lại sau)
                             <div class="col-span-2">
                                 <div class="co-map-row">
                                     <div class="co-map-info">
@@ -148,7 +148,7 @@
                                         </div>
                                         <div class="co-map-text">
                                             <strong>Chọn vị trí trên bản đồ</strong>
-                                            <span>Xác định địa chỉ chính xác với Google Maps</span>
+                                            <span>Xác định địa chỉ chính xác với Mapbox</span>
                                         </div>
                                     </div>
 
@@ -164,6 +164,7 @@
                                     </button>
                                 </div>
                             </div>
+                            *@
 
                             @* Note *@
                             <div class="co-field col-span-2">
@@ -346,7 +347,7 @@
     </form>
 </section>
 
-@* ════ Google Map Modal (portal at bottom of body) ════════════ *@
+@* ════ Google Map Modal (Đã ẩn - portal at bottom of body) ════════════
 <div id="co-map-modal"
      class="co-map-modal"
      data-google-maps-config-url="/api/integrations/google-maps/config"
@@ -357,7 +358,7 @@
      tabindex="-1">
     <div class="co-map-modal-box">
         <div class="co-map-modal-header">
-            <h2 id="co-map-modal-title">Chọn vị trí trên Google Maps</h2>
+            <h2 id="co-map-modal-title">Chọn vị trí trên Mapbox</h2>
             <button type="button"
                     id="co-map-close"
                     class="co-map-close"
@@ -371,7 +372,7 @@
         <div id="co-map-canvas"
              class="co-map-embed"
              role="application"
-             aria-label="Google Maps — chọn địa chỉ giao hàng">
+             aria-label="Mapbox — chọn địa chỉ giao hàng">
         </div>
 
         <div class="co-map-modal-footer">
@@ -387,6 +388,7 @@
         </div>
     </div>
 </div>
+*@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

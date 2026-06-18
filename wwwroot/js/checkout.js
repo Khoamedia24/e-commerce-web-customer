@@ -210,24 +210,263 @@
     });
   }
 
-  /* ── Google Maps location picker ─────────────────────────────── */
+  /* ===========================================================================
+     ĐOẠN CODE GOOGLE MAPS CŨ (ĐÃ ĐƯỢC COMMENT LẠI ĐỂ DÙNG LÀM THAM KHẢO / FALLBACK)
+     ===========================================================================
+  
+  // const googleMapsConfigUrl = mapModal?.dataset.googleMapsConfigUrl || '/api/integrations/google-maps/config';
+  // const googleMapsReverseGeocodeUrl = mapModal?.dataset.googleMapsReverseGeocodeUrl || '/api/integrations/google-maps/reverse-geocode';
+  //
+  // let googleMapsClientConfigPromise = null;
+  // let googleMapsPromise = null;
+  // let googleMapsAuthFailed = false;
+  // let googleMapsAuthReject = null;
+  // let googleMapsAuthHandlerInstalled = false;
+  //
+  // function getGoogleMapsErrorMessage(error) {
+  //   const currentOrigin = window.location.origin;
+  //   if (error?.message === 'missing-api-key') {
+  //     return 'Chưa cấu hình Google Maps API key. Vui lòng thêm key vào appsettings.GoogleMaps.json.';
+  //   }
+  //   if (error?.message === 'google-maps-auth-failure') {
+  //     return `Google Maps đang từ chối API key. Hãy kiểm tra Maps JavaScript API, Billing và thêm đúng domain hiện tại: ${currentOrigin}/*`;
+  //   }
+  //   return 'Không thể tải Google Maps. Vui lòng kiểm tra API key và kết nối mạng.';
+  // }
+  //
+  // function handleGoogleMapsAuthFailure() {
+  //   googleMapsAuthFailed = true;
+  //   showMapCanvasError(
+  //     'Google Maps chưa chấp nhận API key',
+  //     `Kiểm tra Maps JavaScript API, Billing và thêm referrer: ${window.location.origin}/*`
+  //   );
+  //   setMapStatus(getGoogleMapsErrorMessage(new Error('google-maps-auth-failure')), 'error');
+  //   if (mapUseBtn) mapUseBtn.disabled = true;
+  //   if (googleMapsAuthReject) {
+  //     googleMapsAuthReject(new Error('google-maps-auth-failure'));
+  //     googleMapsAuthReject = null;
+  //   }
+  // }
+  //
+  // function installGoogleMapsAuthFailureHandler() {
+  //   if (googleMapsAuthHandlerInstalled) return;
+  //   const previousHandler = window.gm_authFailure;
+  //   window.gm_authFailure = () => {
+  //     if (typeof previousHandler === 'function') {
+  //       previousHandler();
+  //     }
+  //     handleGoogleMapsAuthFailure();
+  //   };
+  //   googleMapsAuthHandlerInstalled = true;
+  // }
+  //
+  // async function loadGoogleMapsClientConfig() {
+  //   if (googleMapsClientConfigPromise) return googleMapsClientConfigPromise;
+  //   googleMapsClientConfigPromise = fetch(googleMapsConfigUrl, {
+  //     headers: { Accept: 'application/json' }
+  //   })
+  //     .then(async (response) => {
+  //       const payload = await response.json().catch(() => null);
+  //       if (!response.ok || !payload?.isConfigured || !payload?.apiKey) {
+  //         throw new Error(payload?.message || 'missing-api-key');
+  //       }
+  //       return payload;
+  //     });
+  //   return googleMapsClientConfigPromise;
+  // }
+  //
+  // async function loadGoogleMapsApi() {
+  //   if (googleMapsAuthFailed) throw new Error('google-maps-auth-failure');
+  //   if (window.google?.maps) return Promise.resolve(window.google.maps);
+  //   const clientConfig = await loadGoogleMapsClientConfig();
+  //   if (googleMapsPromise) return googleMapsPromise;
+  //   googleMapsAuthFailed = false;
+  //   installGoogleMapsAuthFailureHandler();
+  //   googleMapsPromise = new Promise((resolve, reject) => {
+  //     const callbackName = 'techStoreCheckoutGoogleMapsReady';
+  //     const existingScript = document.getElementById('google-maps-js-api');
+  //     googleMapsAuthReject = reject;
+  //     window[callbackName] = () => {
+  //       window.setTimeout(() => {
+  //         if (googleMapsAuthFailed) {
+  //           reject(new Error('google-maps-auth-failure'));
+  //           return;
+  //         }
+  //         googleMapsAuthReject = null;
+  //         resolve(window.google.maps);
+  //       }, 0);
+  //     };
+  //     if (existingScript) {
+  //       existingScript.addEventListener('error', reject, { once: true });
+  //       return;
+  //     }
+  //     const script = document.createElement('script');
+  //     const params = new URLSearchParams({
+  //       key: clientConfig.apiKey,
+  //       callback: callbackName,
+  //       language: 'vi',
+  //       region: 'VN',
+  //       libraries: 'places'
+  //     });
+  //     script.id = 'google-maps-js-api';
+  //     script.async = true;
+  //     script.defer = true;
+  //     script.src = 'https://maps.googleapis.com/maps/api/js?' + params.toString();
+  //     script.onerror = () => reject(new Error('google-maps-load-failed'));
+  //     document.head.appendChild(script);
+  //   }).catch((error) => {
+  //     googleMapsPromise = null;
+  //     throw error;
+  //   });
+  //   return googleMapsPromise;
+  // }
+  //
+  // async function initCheckoutMap() {
+  //   clearMapCanvasError();
+  //   await loadGoogleMapsApi();
+  //   if (googleMapsAuthFailed) throw new Error('google-maps-auth-failure');
+  //   if (checkoutMap || !mapCanvas) return;
+  //   checkoutMap = new google.maps.Map(mapCanvas, {
+  //     center: DEFAULT_MAP_CENTER,
+  //     zoom: 13,
+  //     clickableIcons: false,
+  //     fullscreenControl: true,
+  //     mapTypeControl: false,
+  //     streetViewControl: false
+  //   });
+  //   checkoutMarker = new google.maps.Marker({
+  //     map: checkoutMap,
+  //     draggable: true,
+  //     visible: false
+  //   });
+  //   checkoutMap.addListener('click', (event) => {
+  //     selectMapLocation(event.latLng);
+  //   });
+  //   checkoutMarker.addListener('dragend', (event) => {
+  //     selectMapLocation(event.latLng);
+  //   });
+  //   window.setTimeout(() => {
+  //     if (googleMapsAuthFailed) {
+  //       handleGoogleMapsAuthFailure();
+  //     }
+  //   }, 400);
+  // }
+  //
+  // function getComponent(components, typeGroups) {
+  //   for (const types of typeGroups) {
+  //     const match = components.find((component) =>
+  //       types.every((type) => (component.types || []).includes(type))
+  //     );
+  //     if (match) return match.longName || match.long_name || '';
+  //   }
+  //   return '';
+  // }
+  //
+  // function parseAddressComponents(result) {
+  //   const components = result.addressComponents || result.address_components || [];
+  //   const province = getComponent(components, [['administrative_area_level_1'], ['locality']]);
+  //   const district = getComponent(components, [['administrative_area_level_2'], ['sublocality_level_1'], ['locality']]);
+  //   const ward = getComponent(components, [['administrative_area_level_3'], ['administrative_area_level_4'], ['sublocality_level_2'], ['sublocality_level_3'], ['neighborhood']]);
+  //   const streetNumber = getComponent(components, [['street_number']]);
+  //   const route = getComponent(components, [['route']]);
+  //   const premise = getComponent(components, [['premise'], ['point_of_interest'], ['establishment']]);
+  //   return { province, district: district && normalizeAddressName(district) !== normalizeAddressName(province) ? district : '', ward, streetNumber, route, premise };
+  // }
+  //
+  // function buildAddressDetail(result, parsedAddress) {
+  //   const street = [parsedAddress.streetNumber, parsedAddress.route].filter(Boolean).join(' ').trim();
+  //   if (street) return street;
+  //   if (parsedAddress.premise) return parsedAddress.premise;
+  //   const adminNames = [parsedAddress.ward, parsedAddress.district, parsedAddress.province, 'Việt Nam', 'Vietnam'].map(normalizeAddressName).filter(Boolean);
+  //   return (result.formattedAddress || result.formatted_address || '').split(',').map((part) => part.trim()).filter((part) => {
+  //     const normalizedPart = normalizeAddressName(part);
+  //     return normalizedPart && !adminNames.some((name) => normalizedPart === name || normalizedPart.includes(name) || name.includes(normalizedPart));
+  //   }).join(', ');
+  // }
+  //
+  // async function fillAddressForm(result) {
+  //   if (!provinceSelect || !districtSelect || !wardSelect) return;
+  //   const parsedAddress = parseAddressComponents(result);
+  //   await loadProvinces();
+  //   const province = findByName(provincesCache, parsedAddress.province);
+  //   if (province) {
+  //     provinceSelect.value = province.code;
+  //     resetSelect(districtSelect, '-- Chọn Quận / Huyện --');
+  //     resetSelect(wardSelect, '-- Chọn Phường / Xã --');
+  //     const districts = await loadDistricts(province.code);
+  //     const district = findByName(districts, parsedAddress.district);
+  //     if (district) {
+  //       districtSelect.value = district.code;
+  //       const wards = await loadWards(district.code);
+  //       const ward = findByName(wards, parsedAddress.ward);
+  //       if (ward) {
+  //         wardSelect.value = ward.code;
+  //       }
+  //     }
+  //   }
+  //   const addressDetail = buildAddressDetail(result, parsedAddress);
+  //   setFieldValue(addressDetailInput, addressDetail || result.formattedAddress || result.formatted_address || '');
+  // }
+  //
+  // function toLatLngLiteral(latLng) {
+  //   return {
+  //     lat: typeof latLng.lat === 'function' ? latLng.lat() : latLng.lat,
+  //     lng: typeof latLng.lng === 'function' ? latLng.lng() : latLng.lng
+  //   };
+  // }
+  //
+  // async function reverseGeocodeLocation(latLng) {
+  //   if (!window.google?.maps?.Geocoder) {
+  //     throw new Error('google-maps-not-loaded');
+  //   }
+  //   const geocoder = new google.maps.Geocoder();
+  //   const coordinates = toLatLngLiteral(latLng);
+  //   return new Promise((resolve, reject) => {
+  //     geocoder.geocode({ location: coordinates }, (results, status) => {
+  //       if (status === 'OK' && results && results[0]) {
+  //         resolve(results[0]);
+  //       } else {
+  //         reject(new Error('reverse-geocode-failed'));
+  //       }
+  //     });
+  //   });
+  // }
+  //
+  // async function selectMapLocation(latLng) {
+  //   if (!checkoutMarker) return;
+  //   selectedLocation = latLng;
+  //   checkoutMarker.setPosition(latLng);
+  //   checkoutMarker.setVisible(true);
+  //   checkoutMap.panTo(latLng);
+  //   if (mapUseBtn) mapUseBtn.disabled = true;
+  //   setMapStatus('Đang xác định địa chỉ từ vị trí đã chọn...', null);
+  //   try {
+  //     const result = await reverseGeocodeLocation(latLng);
+  //     await fillAddressForm(result);
+  //     if (mapUseBtn) mapUseBtn.disabled = false;
+  //     setMapStatus('Đã tự động điền địa chỉ. Bạn có thể dùng vị trí này hoặc chọn lại trên bản đồ.', 'success');
+  //   } catch (error) {
+  //     setMapStatus(error?.message && error.message !== 'reverse-geocode-failed' ? error.message : 'Không thể xác định địa chỉ từ Google Maps. Vui lòng thử lại hoặc nhập thủ công.', 'error');
+  //   }
+  // }
+  
+     =========================================================================== */
+
+  /* ── Mapbox location picker ─────────────────────────────── */
   const mapModal = document.getElementById('co-map-modal');
   const mapOpenBtn = document.getElementById('co-map-open');
   const mapCloseBtn = document.getElementById('co-map-close');
   const mapCanvas = document.getElementById('co-map-canvas');
   const mapStatus = document.getElementById('co-map-status');
   const mapUseBtn = document.getElementById('co-map-use');
-  const googleMapsConfigUrl = mapModal?.dataset.googleMapsConfigUrl || '/api/integrations/google-maps/config';
-  const googleMapsReverseGeocodeUrl = mapModal?.dataset.googleMapsReverseGeocodeUrl || '/api/integrations/google-maps/reverse-geocode';
+  const mapboxConfigUrl = mapModal?.dataset.googleMapsConfigUrl || '/api/integrations/google-maps/config';
 
-  let googleMapsClientConfigPromise = null;
-  let googleMapsPromise = null;
+  let mapboxClientConfigPromise = null;
+  let mapboxPromise = null;
+  let mapboxToken = '';
   let checkoutMap = null;
   let checkoutMarker = null;
   let selectedLocation = null;
-  let googleMapsAuthFailed = false;
-  let googleMapsAuthReject = null;
-  let googleMapsAuthHandlerInstalled = false;
 
   function setMapStatus(message, tone) {
     if (!mapStatus) return;
@@ -256,244 +495,132 @@
     mapCanvas?.querySelector('.co-map-error-panel')?.remove();
   }
 
-  function getGoogleMapsErrorMessage(error) {
-    const currentOrigin = window.location.origin;
+  async function loadMapboxConfig() {
+    if (mapboxClientConfigPromise) return mapboxClientConfigPromise;
 
-    if (error?.message === 'missing-api-key') {
-      return 'Chưa cấu hình Google Maps API key. Vui lòng thêm key vào appsettings.GoogleMaps.json.';
-    }
-
-    if (error?.message === 'google-maps-auth-failure') {
-      return `Google Maps đang từ chối API key. Hãy kiểm tra Maps JavaScript API, Billing và thêm đúng domain hiện tại: ${currentOrigin}/*`;
-    }
-
-    return 'Không thể tải Google Maps. Vui lòng kiểm tra API key và kết nối mạng.';
-  }
-
-  function handleGoogleMapsAuthFailure() {
-    googleMapsAuthFailed = true;
-
-    showMapCanvasError(
-      'Google Maps chưa chấp nhận API key',
-      `Kiểm tra Maps JavaScript API, Billing và thêm referrer: ${window.location.origin}/*`
-    );
-    setMapStatus(getGoogleMapsErrorMessage(new Error('google-maps-auth-failure')), 'error');
-    if (mapUseBtn) mapUseBtn.disabled = true;
-
-    if (googleMapsAuthReject) {
-      googleMapsAuthReject(new Error('google-maps-auth-failure'));
-      googleMapsAuthReject = null;
-    }
-  }
-
-  function installGoogleMapsAuthFailureHandler() {
-    if (googleMapsAuthHandlerInstalled) return;
-
-    const previousHandler = window.gm_authFailure;
-    window.gm_authFailure = () => {
-      if (typeof previousHandler === 'function') {
-        previousHandler();
-      }
-
-      handleGoogleMapsAuthFailure();
-    };
-    googleMapsAuthHandlerInstalled = true;
-  }
-
-  async function loadGoogleMapsClientConfig() {
-    if (googleMapsClientConfigPromise) return googleMapsClientConfigPromise;
-
-    googleMapsClientConfigPromise = fetch(googleMapsConfigUrl, {
+    mapboxClientConfigPromise = fetch(mapboxConfigUrl, {
       headers: { Accept: 'application/json' }
     })
       .then(async (response) => {
         const payload = await response.json().catch(() => null);
         if (!response.ok || !payload?.isConfigured || !payload?.apiKey) {
-          throw new Error(payload?.message || 'missing-api-key');
+          throw new Error('missing-api-key');
         }
 
         return payload;
       });
 
-    return googleMapsClientConfigPromise;
+    return mapboxClientConfigPromise;
   }
 
-  async function loadGoogleMapsApi() {
-    if (googleMapsAuthFailed) throw new Error('google-maps-auth-failure');
-    if (window.google?.maps) return Promise.resolve(window.google.maps);
+  async function loadMapboxApi() {
+    if (window.mapboxgl) return Promise.resolve(window.mapboxgl);
+    if (mapboxPromise) return mapboxPromise;
 
-    const clientConfig = await loadGoogleMapsClientConfig();
+    const clientConfig = await loadMapboxConfig();
+    mapboxToken = clientConfig.apiKey;
 
-    if (googleMapsPromise) return googleMapsPromise;
-
-    googleMapsAuthFailed = false;
-    installGoogleMapsAuthFailureHandler();
-
-    googleMapsPromise = new Promise((resolve, reject) => {
-      const callbackName = 'techStoreCheckoutGoogleMapsReady';
-      const existingScript = document.getElementById('google-maps-js-api');
-      googleMapsAuthReject = reject;
-
-      window[callbackName] = () => {
-        window.setTimeout(() => {
-          if (googleMapsAuthFailed) {
-            reject(new Error('google-maps-auth-failure'));
-            return;
-          }
-
-          googleMapsAuthReject = null;
-          resolve(window.google.maps);
-        }, 0);
-      };
-
-      if (existingScript) {
-        existingScript.addEventListener('error', reject, { once: true });
-        return;
-      }
+    mapboxPromise = new Promise((resolve, reject) => {
+      const link = document.createElement('link');
+      link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css';
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
 
       const script = document.createElement('script');
-      const params = new URLSearchParams({
-        key: clientConfig.apiKey,
-        callback: callbackName,
-        language: 'vi',
-        region: 'VN',
-        libraries: 'places'
-      });
-
-      script.id = 'google-maps-js-api';
+      script.id = 'mapbox-js-api';
+      script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js';
       script.async = true;
       script.defer = true;
-      script.src = 'https://maps.googleapis.com/maps/api/js?' + params.toString();
-      script.onerror = () => reject(new Error('google-maps-load-failed'));
+      script.onload = () => {
+        window.mapboxgl.accessToken = mapboxToken;
+        resolve(window.mapboxgl);
+      };
+      script.onerror = () => reject(new Error('mapbox-load-failed'));
       document.head.appendChild(script);
-    }).catch((error) => {
-      googleMapsPromise = null;
-      throw error;
     });
 
-    return googleMapsPromise;
+    return mapboxPromise;
   }
 
   async function initCheckoutMap() {
     clearMapCanvasError();
-    await loadGoogleMapsApi();
-    if (googleMapsAuthFailed) throw new Error('google-maps-auth-failure');
+    await loadMapboxApi();
     if (checkoutMap || !mapCanvas) return;
 
-    checkoutMap = new google.maps.Map(mapCanvas, {
-      center: DEFAULT_MAP_CENTER,
-      zoom: 13,
-      clickableIcons: false,
-      fullscreenControl: true,
-      mapTypeControl: false,
-      streetViewControl: false
+    const center = selectedLocation
+      ? [selectedLocation.lng, selectedLocation.lat]
+      : [DEFAULT_MAP_CENTER.lng, DEFAULT_MAP_CENTER.lat];
+
+    checkoutMap = new mapboxgl.Map({
+      container: mapCanvas,
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: center,
+      zoom: 13
     });
 
-    checkoutMarker = new google.maps.Marker({
-      map: checkoutMap,
-      draggable: true,
-      visible: false
+    checkoutMarker = new mapboxgl.Marker({
+      draggable: true
+    })
+      .setLngLat(center)
+      .addTo(checkoutMap);
+
+    checkoutMap.on('click', (event) => {
+      selectMapLocation(event.lngLat);
     });
 
-    checkoutMap.addListener('click', (event) => {
-      selectMapLocation(event.latLng);
+    checkoutMarker.on('dragend', () => {
+      const lngLat = checkoutMarker.getLngLat();
+      selectMapLocation(lngLat);
     });
-
-    checkoutMarker.addListener('dragend', (event) => {
-      selectMapLocation(event.latLng);
-    });
-
-    window.setTimeout(() => {
-      if (googleMapsAuthFailed) {
-        handleGoogleMapsAuthFailure();
-      }
-    }, 400);
   }
 
-  function getComponent(components, typeGroups) {
-    for (const types of typeGroups) {
-      const match = components.find((component) =>
-        types.every((type) => (component.types || []).includes(type))
-      );
-      if (match) return match.longName || match.long_name || '';
+  function parseMapboxAddress(feature) {
+    const context = feature.context || [];
+    let province = '';
+    let district = '';
+    let ward = '';
+
+    context.forEach(item => {
+      if (item.id.startsWith('region')) {
+        province = item.text;
+      } else if (item.id.startsWith('district') || item.id.startsWith('locality') || item.id.startsWith('place')) {
+        if (!district) district = item.text;
+      } else if (item.id.startsWith('neighborhood') || item.id.startsWith('postcode') || item.id.startsWith('ward')) {
+        if (!ward) ward = item.text;
+      }
+    });
+
+    if (feature.place_type.includes('neighborhood')) {
+      ward = feature.text;
+    } else if (feature.place_type.includes('district') || feature.place_type.includes('place')) {
+      district = feature.text;
+    } else if (feature.place_type.includes('region')) {
+      province = feature.text;
     }
 
-    return '';
-  }
-
-  function parseAddressComponents(result) {
-    const components = result.addressComponents || result.address_components || [];
-    const province = getComponent(components, [
-      ['administrative_area_level_1'],
-      ['locality']
-    ]);
-    const district = getComponent(components, [
-      ['administrative_area_level_2'],
-      ['sublocality_level_1'],
-      ['locality']
-    ]);
-    const ward = getComponent(components, [
-      ['administrative_area_level_3'],
-      ['administrative_area_level_4'],
-      ['sublocality_level_2'],
-      ['sublocality_level_3'],
-      ['neighborhood']
-    ]);
-    const streetNumber = getComponent(components, [['street_number']]);
-    const route = getComponent(components, [['route']]);
-    const premise = getComponent(components, [['premise'], ['point_of_interest'], ['establishment']]);
+    let route = '';
+    let streetNumber = '';
+    if (feature.place_type.includes('address')) {
+      route = feature.text;
+      streetNumber = feature.address || '';
+    }
 
     return {
       province,
-      district: district && normalizeAddressName(district) !== normalizeAddressName(province)
-        ? district
-        : '',
+      district,
       ward,
       streetNumber,
       route,
-      premise
+      formattedAddress: feature.place_name
     };
   }
 
-  function buildAddressDetail(result, parsedAddress) {
-    const street = [parsedAddress.streetNumber, parsedAddress.route]
-      .filter(Boolean)
-      .join(' ')
-      .trim();
-
-    if (street) return street;
-    if (parsedAddress.premise) return parsedAddress.premise;
-
-    const adminNames = [
-      parsedAddress.ward,
-      parsedAddress.district,
-      parsedAddress.province,
-      'Việt Nam',
-      'Vietnam'
-    ].map(normalizeAddressName).filter(Boolean);
-
-    return (result.formattedAddress || result.formatted_address || '')
-      .split(',')
-      .map((part) => part.trim())
-      .filter((part) => {
-        const normalizedPart = normalizeAddressName(part);
-        return normalizedPart
-          && !adminNames.some((name) =>
-            normalizedPart === name
-            || normalizedPart.includes(name)
-            || name.includes(normalizedPart)
-          );
-      })
-      .join(', ');
-  }
-
-  async function fillAddressForm(result) {
+  async function fillAddressForm(parsedAddress) {
     if (!provinceSelect || !districtSelect || !wardSelect) return;
 
-    const parsedAddress = parseAddressComponents(result);
     await loadProvinces();
-
     const province = findByName(provincesCache, parsedAddress.province);
+
     if (province) {
       provinceSelect.value = province.code;
       resetSelect(districtSelect, '-- Chọn Quận / Huyện --');
@@ -513,57 +640,43 @@
       }
     }
 
-    const addressDetail = buildAddressDetail(result, parsedAddress);
-    setFieldValue(addressDetailInput, addressDetail || result.formattedAddress || result.formatted_address || '');
+    const addressDetail = [parsedAddress.streetNumber, parsedAddress.route]
+      .filter(Boolean)
+      .join(' ')
+      .trim() || parsedAddress.formattedAddress.split(',')[0];
+
+    setFieldValue(addressDetailInput, addressDetail);
   }
 
-  function toLatLngLiteral(latLng) {
-    return {
-      lat: typeof latLng.lat === 'function' ? latLng.lat() : latLng.lat,
-      lng: typeof latLng.lng === 'function' ? latLng.lng() : latLng.lng
-    };
-  }
-
-  async function reverseGeocodeLocation(latLng) {
-    if (!window.google?.maps?.Geocoder) {
-      throw new Error('google-maps-not-loaded');
+  async function reverseGeocodeLocation(lngLat) {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=${mapboxToken}&language=vi`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('reverse-geocode-failed');
     }
-    const geocoder = new google.maps.Geocoder();
-    const coordinates = toLatLngLiteral(latLng);
-
-    return new Promise((resolve, reject) => {
-      geocoder.geocode({ location: coordinates }, (results, status) => {
-        if (status === 'OK' && results && results[0]) {
-          resolve(results[0]);
-        } else {
-          reject(new Error('reverse-geocode-failed'));
-        }
-      });
-    });
+    const data = await response.json();
+    if (!data.features || data.features.length === 0) {
+      throw new Error('reverse-geocode-failed');
+    }
+    return parseMapboxAddress(data.features[0]);
   }
 
-  async function selectMapLocation(latLng) {
+  async function selectMapLocation(lngLat) {
     if (!checkoutMarker) return;
 
-    selectedLocation = latLng;
-    checkoutMarker.setPosition(latLng);
-    checkoutMarker.setVisible(true);
-    checkoutMap.panTo(latLng);
+    selectedLocation = lngLat;
+    checkoutMarker.setLngLat(lngLat);
+    checkoutMap.panTo(lngLat);
     if (mapUseBtn) mapUseBtn.disabled = true;
     setMapStatus('Đang xác định địa chỉ từ vị trí đã chọn...', null);
 
     try {
-      const result = await reverseGeocodeLocation(latLng);
-      await fillAddressForm(result);
+      const parsedAddress = await reverseGeocodeLocation(lngLat);
+      await fillAddressForm(parsedAddress);
       if (mapUseBtn) mapUseBtn.disabled = false;
       setMapStatus('Đã tự động điền địa chỉ. Bạn có thể dùng vị trí này hoặc chọn lại trên bản đồ.', 'success');
     } catch (error) {
-      setMapStatus(
-        error?.message && error.message !== 'reverse-geocode-failed'
-          ? error.message
-          : 'Không thể xác định địa chỉ từ Google Maps. Vui lòng thử lại hoặc nhập thủ công.',
-        'error'
-      );
+      setMapStatus('Không thể xác định địa chỉ từ Mapbox. Vui lòng thử lại hoặc nhập thủ công.', 'error');
     }
   }
 
@@ -573,31 +686,44 @@
     mapModal.classList.add('is-open');
     document.body.style.overflow = 'hidden';
     mapCloseBtn?.focus();
-    setMapStatus('Đang tải Google Maps...', null);
+    setMapStatus('Đang tải bản đồ Mapbox...', null);
 
     initCheckoutMap()
       .then(() => {
-        if (googleMapsAuthFailed) {
-          throw new Error('google-maps-auth-failure');
-        }
-
         window.setTimeout(() => {
-          google.maps.event.trigger(checkoutMap, 'resize');
-          checkoutMap.setCenter(selectedLocation || DEFAULT_MAP_CENTER);
-        }, 0);
+          checkoutMap.resize();
 
-        setMapStatus('Nhấn vào bản đồ để chọn vị trí giao hàng.', null);
+          // Tự động định vị vị trí người dùng (chỉ hoạt động trên HTTPS hoặc localhost)
+          if (navigator.geolocation && !selectedLocation) {
+            setMapStatus('Đang xác định vị trí hiện tại của bạn...', null);
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const userLngLat = {
+                  lng: position.coords.longitude,
+                  lat: position.coords.latitude
+                };
+                selectMapLocation(userLngLat);
+              },
+              (error) => {
+                // Nếu người dùng chặn quyền hoặc lỗi, định vị theo tâm mặc định
+                const center = [DEFAULT_MAP_CENTER.lng, DEFAULT_MAP_CENTER.lat];
+                checkoutMap.setCenter(center);
+                setMapStatus('Kéo ghim hoặc click trên bản đồ để chọn vị trí giao hàng.', null);
+              },
+              { enableHighAccuracy: true, timeout: 6000 }
+            );
+          } else {
+            const center = selectedLocation
+              ? [selectedLocation.lng, selectedLocation.lat]
+              : [DEFAULT_MAP_CENTER.lng, DEFAULT_MAP_CENTER.lat];
+            checkoutMap.setCenter(center);
+            setMapStatus('Kéo ghim hoặc click trên bản đồ để chọn vị trí giao hàng.', null);
+          }
+        }, 200);
       })
       .catch((error) => {
-        const message = getGoogleMapsErrorMessage(error);
-        setMapStatus(message, 'error');
-
-        if (error?.message === 'google-maps-auth-failure') {
-          showMapCanvasError(
-            'Google Maps chưa chấp nhận API key',
-            `Bật Maps JavaScript API, bật Billing và cho phép referrer: ${window.location.origin}/*`
-          );
-        }
+        setMapStatus('Không thể tải bản đồ Mapbox. Vui lòng kiểm tra cấu hình.', 'error');
+        showMapCanvasError('Lỗi tải bản đồ', 'Hãy kiểm tra lại Mapbox Access Token.');
       });
   }
 
