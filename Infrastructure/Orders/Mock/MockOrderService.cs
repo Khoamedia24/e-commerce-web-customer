@@ -28,4 +28,14 @@ public sealed class MockOrderService : IOrderService
             placedAt,
             placedAt.AddDays(2)));
     }
+
+    public Task UpdatePaymentStatusAsync(
+        string orderCode,
+        bool isPaid,
+        string transactionId,
+        CancellationToken cancellationToken = default)
+    {
+        // Mock: no persistent storage — status update is a no-op
+        return Task.CompletedTask;
+    }
 }

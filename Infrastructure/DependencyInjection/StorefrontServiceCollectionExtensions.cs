@@ -15,6 +15,7 @@ using e_commerce_web_customer.Infrastructure.Catalog.Mock;
 using e_commerce_web_customer.Infrastructure.Home.Db;
 using e_commerce_web_customer.Infrastructure.Home.Mock;
 using e_commerce_web_customer.Infrastructure.Integrations.GoogleMaps;
+using e_commerce_web_customer.Infrastructure.Integrations.MoMo;
 using e_commerce_web_customer.Infrastructure.Navigation.Db;
 using e_commerce_web_customer.Infrastructure.Navigation.Mock;
 using e_commerce_web_customer.Infrastructure.Orders.Db;
@@ -38,6 +39,10 @@ public static class StorefrontServiceCollectionExtensions
         services.Configure<GoogleMapsOptions>(
             configuration.GetSection(GoogleMapsOptions.SectionName));
         services.AddHttpClient<IGoogleMapsIntegration, GoogleMapsIntegration>();
+
+        services.Configure<MoMoOptions>(
+            configuration.GetSection(MoMoOptions.SectionName));
+        services.AddHttpClient<IMoMoIntegration, MoMoIntegration>();
 
         return services;
     }

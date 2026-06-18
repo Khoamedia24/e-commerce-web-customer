@@ -14,7 +14,8 @@ public sealed class CheckoutController(
     ICartPersistenceService cartPersistenceService,
     ICartDemoDataProvider demoDataProvider,
     ICheckoutPaymentMethodProvider paymentMethodProvider,
-    IOrderService orderService) : Controller
+    IOrderService orderService,
+    IMoMoIntegration momoIntegration) : Controller
 {
     private const string SuccessSessionKey = "checkout_success_order";
 
@@ -82,6 +83,33 @@ public sealed class CheckoutController(
                 SuccessSessionKey,
                 JsonSerializer.Serialize(successModel));
             await ClearCompletedCartAsync(mode, cancellationToken);
+
+            // MoMo payment — mirrors Flutter: MoMoService.createMoMoPayment() → launchUrl(payUrl)
+            if (IsMoMoPayment(model.PaymentMethodId))
+            {
+                var redirectUrl = Url.ActionLink("MoMoReturn", "Payment");
+                var ipnUrl = Url.ActionLink("MoMoIpn", "Payment");
+                var momoReq = new MoMoCreateRequest(
+                    OrderId: placedOrder.OrderCode,
+                    Amount: (long)orderSnapshot.Total,
+                    OrderInfo: $"Thanh toan don hang {placedOrder.OrderCode}",
+                    RedirectUrl: redirectUrl ?? string.Empty,
+                    IpnUrl: ipnUrl ?? string.Empty);
+
+                var momoResult = await momoIntegration.CreatePaymentAsync(momoReq, cancellationToken);
+
+                if (momoResult.Success && !string.IsNullOrEmpty(momoResult.PayUrl))
+                {
+                    // Redirect sang MoMo sandbox — equivalent to launchUrl(uri) in Flutter
+                    return Redirect(momoResult.PayUrl);
+                }
+
+                ModelState.AddModelError(string.Empty,
+                    momoResult.ErrorMessage ?? "Không thể khởi tạo giao dịch MoMo.");
+                RestoreOrderSummary(model, orderSnapshot);
+                ViewData["Mode"] = mode;
+                return View(model);
+            }
 
             return RedirectToAction(nameof(Success));
         }
@@ -409,5 +437,14 @@ public sealed class CheckoutController(
             .FirstOrDefault(method => method.Id == paymentMethodId)
             ?.Name
             ?? "Phương thức thanh toán";
+    }
+
+    /// <summary>
+    /// Returns true if the selected payment method is MoMo.
+    /// DB: payment_methods — Id=1 COD, Id=2 Momo, Id=3 Vnpay, Id=4 ZaloPay
+    /// </summary>
+    private static bool IsMoMoPayment(long paymentMethodId)
+    {
+        return paymentMethodId == 2; // Id=2 → Momo (verified from DB)
     }
 }

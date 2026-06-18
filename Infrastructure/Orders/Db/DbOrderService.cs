@@ -121,6 +121,25 @@ public sealed class DbOrderService(EcommerceDbContext dbContext) : IOrderService
         }
     }
 
+    public async Task UpdatePaymentStatusAsync(
+        string orderCode,
+        bool isPaid,
+        string transactionId,
+        CancellationToken cancellationToken = default)
+    {
+        var order = await dbContext.Orders
+            .FirstOrDefaultAsync(o => o.OrderCode == orderCode, cancellationToken);
+
+        if (order is null) return;
+
+        order.PaymentStatus = isPaid ? PaymentStatus.Paid : PaymentStatus.Failed;
+        order.UpdatedAt = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+
+
     private static void ValidateRequest(PlaceOrderRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.UserEmail))
