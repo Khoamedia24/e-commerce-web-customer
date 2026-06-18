@@ -1,0 +1,12 @@
+**/.git
+**/.vs
+**/.vscode
+**/.idea
+**/.agents
+**/bin
+**/obj
+**/node_modules
+appsettings.Development.json
+appsettings.GoogleMaps.json
+Dockerfile
+.dockerignore
