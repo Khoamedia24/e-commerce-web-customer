@@ -1,0 +1,36 @@
+<aside class="ai-chat" id="ai-chat" aria-label="Trợ lý tư vấn sản phẩm">
+    <section class="ai-chat__panel" id="ai-chat-panel" aria-hidden="true">
+        <header class="ai-chat__header">
+            <div>
+                <strong>Trợ lý TechStore</strong>
+                <span>Tư vấn sản phẩm bằng AI</span>
+            </div>
+            <button class="ai-chat__close" id="ai-chat-close" type="button" aria-label="Đóng chatbox">×</button>
+        </header>
+
+        <div class="ai-chat__messages" id="ai-chat-messages" role="log" aria-live="polite"></div>
+
+        <div class="ai-chat__loading" id="ai-chat-loading" hidden>
+            <span></span><span></span><span></span>
+            <span class="sr-only">Trợ lý đang trả lời</span>
+        </div>
+
+        <form class="ai-chat__form" id="ai-chat-form">
+            <label class="sr-only" for="ai-chat-input">Nhập câu hỏi về sản phẩm</label>
+            <textarea id="ai-chat-input" maxlength="1000" rows="1"
+                      placeholder="Bạn muốn tìm sản phẩm nào?" required></textarea>
+            <button type="submit" aria-label="Gửi câu hỏi">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 4l17 8-17 8 3-8-3-8zm3 8h14" />
+                </svg>
+            </button>
+        </form>
+    </section>
+
+    <button class="ai-chat__toggle" id="ai-chat-toggle" type="button"
+            aria-controls="ai-chat-panel" aria-expanded="false" aria-label="Mở trợ lý tư vấn">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 12a8 8 0 0 1-8 8H6l-4 2 1.4-4.2A9 9 0 1 1 21 12z" />
+        </svg>
+    </button>
+</aside>

@@ -16,6 +16,7 @@ using e_commerce_web_customer.Infrastructure.Home.Db;
 using e_commerce_web_customer.Infrastructure.Home.Mock;
 using e_commerce_web_customer.Infrastructure.Integrations.GoogleMaps;
 using e_commerce_web_customer.Infrastructure.Integrations.MoMo;
+using e_commerce_web_customer.Infrastructure.Integrations.Gemini;
 using e_commerce_web_customer.Infrastructure.Navigation.Db;
 using e_commerce_web_customer.Infrastructure.Navigation.Mock;
 using e_commerce_web_customer.Infrastructure.Orders.Db;
@@ -83,6 +84,10 @@ public static class StorefrontServiceCollectionExtensions
 
         services.AddDbContext<EcommerceDbContext>(options =>
             options.UseSqlServer(connectionString));
+        services.Configure<GeminiOptions>(
+            configuration.GetSection(GeminiOptions.SectionName));
+        services.AddHttpClient<IAiService, AiService>(client =>
+            client.Timeout = TimeSpan.FromSeconds(30));
         services.AddScoped<IProductCatalog, DbProductCatalog>();
         services.AddScoped<ISiteCategoryMenuDataService, DbSiteCategoryMenuDataService>();
         services.AddScoped<IHomePageDataService, DbHomePageDataService>();
